@@ -75,7 +75,7 @@ class PyGLerModel(object):
         self.cleanUp()
     
         
-    def update(self, vertices, modelM=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None):
+    def update(self, vertices=None, modelM=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None):
         self.needsVAOUpdate=True
         if vertices==None: 
             return

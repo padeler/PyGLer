@@ -5,7 +5,7 @@ Created on Mar 28, 2014
 '''
 
 import numpy as np
-from gui import key, mouse
+from pygler.gui import key, mouse
 
 from trackball import Trackball
 from OpenGL import GL
