@@ -22,6 +22,7 @@ from graphics.shader import Shader
 from gui.viewcontroller import ViewController
 from model import PyGLerModel
 from utils import CameraParams
+import time
 
 
 class PyGLer(object):
@@ -70,17 +71,18 @@ class PyGLer(object):
     def __init__(self, windowWidth=640,windowHeight=480, useFBO=False,cameraParams=CameraParams()):
         self.width=windowWidth
         self.height=windowHeight
-        
+
         self._cameraParams = cameraParams
         
         self.models = []
         self.window = None
         self.lock = threading.Lock()
-        self.captureCond = threading.Condition()
+        self.actionCond = threading.Condition()
         self.useFBO = useFBO
         self.started=False
         self._needsRedraw=False
         self._captureRequested=False
+        self._stopRequested=False
         self.fbo = None
         self.renderBuffers = None
 
@@ -90,9 +92,13 @@ class PyGLer(object):
         ''' 
         Releases any OpenGL resources held by this Viewer
         '''
-        if self.window!=None:
-            self.window.stop()
-            
+        with self.actionCond:
+            self._stopRequested = True
+            while self._stopRequested and self.started:
+                self.actionCond.wait(0.1)           
+        
+        
+        
         
     def __del__(self):
         self.stop()
@@ -110,9 +116,23 @@ class PyGLer(object):
 
         if self._captureRequested==True:
             self.capturedTuple = self.captureRGBD()
-            with self.captureCond:
+            with self.actionCond:
                 self._captureRequested=False
-                self.captureCond.notifyAll()
+                self.actionCond.notifyAll()
+                
+                
+        if self._stopRequested==True:
+            if self.started and self.window!=None:
+                try: 
+                    self.window.stop()    
+                except Exception:
+                    e = sys.exc_info()[0]
+                    print "Exception while stopping GLUT window: ",e
+                    print sys.exc_info()
+            with self.actionCond:
+                self._captureRequested=False
+                self.actionCond.notifyAll()
+
                 
                 
     def captureRGBD(self):
@@ -136,14 +156,14 @@ class PyGLer(object):
             return [img,None,None]
 
         except NoContext:
-            print "No OpenGL Context found. If you are calling from a different thread user the capture() method instead."
+            print "No OpenGL Context found. If you are calling from a different thread use the capture() method instead."
             print sys.exc_info()
         
     def capture(self):
-        with self.captureCond:
+        with self.actionCond:
             self._captureRequested=True
             while self._captureRequested: # while there is no screenshot yet
-                self.captureCond.wait()
+                self.actionCond.wait()
             
             return self.capturedTuple
     
@@ -228,7 +248,7 @@ class PyGLer(object):
             
                 self.shader.bind()
                 self.shader.uniform_matrixf("projM", projMat)
-                
+
                 self.controller = ViewController()
                 self.controller.registerEvents(self.window)
                 self.window.show()
@@ -239,7 +259,7 @@ class PyGLer(object):
                 raise StandardError("Failed to initialize GlutWindow.",e)
         
         try:
-            self.started = True
+            self.started = True                
             self.window.start() # this call is blocking (calls the GLUTMainLoop)
             
             # When stop is called we must release the resources
@@ -261,8 +281,12 @@ class PyGLer(object):
             # Release resources
     
     def start(self):
+
         t = threading.Thread(target = self.run)
         t.start()
+            
+        while not self.started:
+            time.sleep(1.0)
     
 
     
@@ -338,7 +362,8 @@ class PyGLer(object):
         
         
     @staticmethod
-    def Capture2BGRD(rgba,xyzw, scale=1000.0):
+    def Convert2BGRD(rawRGBAXYZW, scale=1000.0):
+        rgba,xyzw = rawRGBAXYZW
         bgr = (rgba[:,:,2::-1]*255.0).astype(np.ubyte)
         dtmp = xyzw[:,:,3]
         dmin = dtmp.min()

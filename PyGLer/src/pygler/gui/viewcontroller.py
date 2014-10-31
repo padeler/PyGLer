@@ -54,7 +54,7 @@ class ViewController(object):
         self._zoom = 1.0
         
         self.showMesh = True
-        self.showFaces = True
+        self.showFaces = False
         self.showNormals = False
         
         
