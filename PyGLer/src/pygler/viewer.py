@@ -80,9 +80,12 @@ class PyGLer(object):
         self.actionCond = threading.Condition()
         self.useFBO = useFBO
         self.started=False
+        
         self._needsRedraw=False
         self._captureRequested=False
         self._stopRequested=False
+        self._model2Remove=None
+        
         self.fbo = None
         self.renderBuffers = None
 
@@ -119,7 +122,21 @@ class PyGLer(object):
             with self.actionCond:
                 self._captureRequested=False
                 self.actionCond.notifyAll()
-                
+        
+        if self._model2Remove!=None:
+            with self.lock:
+                try:
+                    self.models.remove(self._model2Remove)
+                    self._model2Remove.cleanUp()
+                    self._needsRedraw=True
+                except ValueError:
+                    print "No Model named ",self._model2Remove.name
+                    print sys.exc_info()
+                    
+            with self.actionCond:
+                self._model2Remove=None
+                self.actionCond.notifyAll()
+                        
                 
         if self._stopRequested==True:
             if self.started and self.window!=None:
@@ -297,26 +314,21 @@ class PyGLer(object):
             
     def removeModel(self,model):
         '''
-        # FIXME: Models cannot be deleted from a thread that does not own the GLUT context.
-        # TODO: Move this operation to the pygler thread.
+        Removes the model from the viewer. 
+        The model removal is handled by the viewer main thread. 
         '''
-        with self.lock:
-            try:
-                self.models.remove(model)
-                self._needsRedraw=True
-            except ValueError:
-                print "No Model named ",model.name
-                print sys.exc_info()
-    
+        with self.actionCond:
+            if self._model2Remove!=None:
+                raise StandardError("Failed to remove model. There is already a model pending for removal.")
+            self._model2Remove = model 
+            while self._model2Remove!=None: # while model is not removed
+                self.actionCond.wait()
+
+            
     def removeAll(self):
-        '''
-        # FIXME: Models cannot be deleted from a thread that does not own the GLUT context.
-        # TODO: Move this operation to the pygler thread.
-        '''
-        with self.lock:
-            self.models = [] 
-            self._needsRedraw=True
-        
+        for m in self.models:
+            self.removeModel(m)
+                    
     def on_draw(self):
         if self.started==False:
             return
@@ -347,7 +359,7 @@ class PyGLer(object):
         
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         with self.lock:
-            for m in self.models:# TODO: Create mode VAO on_idle
+            for m in self.models:# TODO: Create model VAO on_idle
                 if m.needsVAOUpdate==True:  
                     m.updateVAO(self.shader)
                     

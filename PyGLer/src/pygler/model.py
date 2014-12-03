@@ -17,11 +17,9 @@ class PyGLerModel(object):
     LINE_VBO_INDEX=3
     NORMAL_VBO_INDEX=4
     
-    
     MESH_VAO=0
     LINE_VAO=1
     NORMAL_VAO=2
-    
     
     '''
     A Model that can be rendered by PyGLer.
@@ -62,17 +60,14 @@ class PyGLerModel(object):
         Note: cleanUp and __del__ must be called from the thread that owns the GLUT context.
         Calling from another thread will not release the resources and raise a NoContext exception.
         '''
-        if self.vertexBuffers!=None:
-            GL.glDeleteBuffers(len(self.vertexBuffers),self.vertexBuffers)
-            self.vertexBuffers=None
         if self.VAO!=None:
+            if self.vertexBuffers!=None:
+                GL.glDeleteBuffers(len(self.vertexBuffers),self.vertexBuffers)
+                self.vertexBuffers=None
             GL.glDeleteBuffers(len(self.VAO),self.VAO)
             self.VAO=None
         self._modelM = None
         
-        
-    def __del__(self):
-        self.cleanUp()
     
         
     def update(self, vertices=None, modelM=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None):
@@ -82,6 +77,7 @@ class PyGLerModel(object):
         
         # FIXME: Ensure that the incoming data wont be changed before they are copied to the GPU.
         # Maybe make a copy of everything in update() ? 
+        
         
         self._ensureDtype(vertices=vertices, modelM=modelM, triangles=triangles, 
                            normals=normals, colors=colors, textureCoords=textureCoords, texture=texture)
