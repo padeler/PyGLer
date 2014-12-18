@@ -6,7 +6,6 @@ Created on Mar 27, 2014
 import numpy as np
 from OpenGL import GL
 from OpenGL.GL import ctypes
-from numpy.oldnumeric.random_array import uniform
 
 
 class PyGLerModel(object):
