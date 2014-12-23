@@ -49,7 +49,7 @@ class PyGLerModel(object):
     
     def _ensureDtype(self,**kwargs):
         for name,mat in kwargs.iteritems():
-            if mat!=None and mat.dtype==np.float64:
+            if mat is not None and mat.dtype==np.float64:
                 raise StandardError("Error. ",name," dtype should be float32.")
             
             
@@ -71,7 +71,7 @@ class PyGLerModel(object):
         
     def update(self, vertices=None, modelM=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None):
         self.needsVAOUpdate=True
-        if vertices==None: 
+        if vertices is None: 
             return
         
         # FIXME: Ensure that the incoming data wont be changed before they are copied to the GPU.
@@ -87,13 +87,13 @@ class PyGLerModel(object):
             vmin, vmax =  vertices[:,0:3].min(), vertices[:,0:3].max()
             vertices[:,0:3] = 2*(vertices[:,0:3]-vmin)/(vmax-vmin) - 1
             
-        if self._modelM==None and modelM==None: # Compute a translate matrix that centers the object.
+        if self._modelM is None and modelM is None: # Compute a translate matrix that centers the object.
             vmin,vmax = vertices.min(0), vertices.max(0)
             center = vmin + (vmax-vmin)/2
             modelM = np.eye(4,dtype=np.float32)
             modelM[0:3,3] = -center[0:3]
         
-        if modelM!=None:
+        if modelM is not None:
             self._modelM = modelM.transpose().reshape(-1).tolist()
     
         
@@ -106,7 +106,7 @@ class PyGLerModel(object):
         # if normals are supplied. Compute the vertices for the line segments that will represent them 
         # and add them to the end of the vertices list
 
-        if normals!=None:
+        if normals is not None:
             if normals.shape!=vertices.shape:
                 raise StandardError("Normals array must have the same shape as the vertices array.")
             
@@ -136,7 +136,7 @@ class PyGLerModel(object):
         
 
     def setModelM(self, modelM):
-        if modelM==None or modelM.shape!=(4,4):
+        if modelM is None or modelM.shape!=(4,4):
             raise StandardError("Invalid model matrix")
         
         self._modelM = modelM.transpose().reshape(-1).tolist()
@@ -150,10 +150,10 @@ class PyGLerModel(object):
         self.vertexBuffers = GL.glGenBuffers(5)
     
     def updateVAO(self,shader):
-        if self.vertices==None or self.needsVAOUpdate==False: 
+        if self.vertices is None or self.needsVAOUpdate==False: 
             return
         
-        if self.VAO==None:
+        if self.VAO is None:
             self.createVAO(shader)
         
         # ============ VAO for triangle mesh (or point cloud)
@@ -190,7 +190,7 @@ class PyGLerModel(object):
 
         # ======= Triangles
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.vertexBuffers[self.TRIANGLE_VBO_INDEX])         
-        if self.triangles!=None: 
+        if self.triangles is not None: 
             GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.triangles.size*4, self.triangles, self.glDrawMethod)
         else:
             GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, len(self.vertices)*4, np.arange(len(self.vertices),dtype=np.uint32), self.glDrawMethod)
@@ -204,7 +204,7 @@ class PyGLerModel(object):
         
         
         # ============ VAO for Lines
-        if self.triangles!=None: 
+        if self.triangles is not None: 
             GL.glBindVertexArray( self.VAO[self.LINE_VAO] )
             
             # ======== Vertices
@@ -292,17 +292,17 @@ class PyGLerModel(object):
             
             if showMesh:
                 GL.glBindVertexArray(self.VAO[self.MESH_VAO])
-                if self.triangles!=None:
+                if self.triangles is not None:
                     GL.glDrawElements(GL.GL_TRIANGLES, self.triangles.size, GL.GL_UNSIGNED_INT , None)
                 else:
                     GL.glDrawElements(GL.GL_POINTS, self.vertexCount, GL.GL_UNSIGNED_INT , None)
              
-            if showFaces and self.triangles!=None: 
+            if showFaces and self.triangles is not None: 
                 GL.glBindVertexArray(self.VAO[self.LINE_VAO])
                 shader.uniformf("singleColor",0,0,0,1)
                 GL.glDrawElements(GL.GL_LINES, self.triangles.size*3, GL.GL_UNSIGNED_INT , None)
                 
-            if showNormals and self.normals!=None:
+            if showNormals and self.normals is not None:
                 GL.glBindVertexArray(self.VAO[self.NORMAL_VAO])
                 shader.uniformf("singleColor",1,0,0,1)
                 GL.glDrawElements(GL.GL_LINES, self.vertexCount*2, GL.GL_UNSIGNED_INT , None)

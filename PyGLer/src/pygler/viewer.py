@@ -68,7 +68,7 @@ class PyGLer(object):
                 }"""
     
     
-    def __init__(self, windowWidth=640,windowHeight=480, useFBO=False,cameraParams=CameraParams()):
+    def __init__(self, windowWidth=640,windowHeight=480, useFBO=False,cameraParams=CameraParams(), initViewM=np.eye(4,dtype=np.float32)):
         self.width=windowWidth
         self.height=windowHeight
 
@@ -85,10 +85,10 @@ class PyGLer(object):
         self._captureRequested=False
         self._stopRequested=False
         self._model2Remove=None
-        
         self.fbo = None
         self.renderBuffers = None
 
+        self.controller = ViewController(initialViewM=initViewM)
     
     
     def stop(self):
@@ -153,6 +153,11 @@ class PyGLer(object):
                 
                 
     def captureRGBD(self):
+        '''
+        XXX DO NOT USE THIS METHOD. Use the capture() instead. 
+        This method is called from the GLUT thread.
+        Captures a RGBD frame.
+        '''
         try:
             if self.useFBO:
                 res = []
@@ -177,6 +182,11 @@ class PyGLer(object):
             print sys.exc_info()
         
     def capture(self):
+        '''
+        Capture a raw frame and return it to host memory.
+        Use PyGLer.Convert2BGRD to convert the captured images to 
+        the typical depth and BGR pair a la kinect.
+        '''
         with self.actionCond:
             self._captureRequested=True
             while self._captureRequested: # while there is no screenshot yet
@@ -266,7 +276,6 @@ class PyGLer(object):
                 self.shader.bind()
                 self.shader.uniform_matrixf("projM", projMat)
 
-                self.controller = ViewController()
                 self.controller.registerEvents(self.window)
                 self.window.show()
                 
