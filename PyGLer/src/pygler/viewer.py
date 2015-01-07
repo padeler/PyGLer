@@ -388,10 +388,11 @@ class PyGLer(object):
         bgr = (rgba[:,:,2::-1]*255.0).astype(np.ubyte)
         dtmp = xyzw[:,:,3]
         dmin = dtmp.min()
-        if dmin!=0: # invalid depth is 0 for Kinect RGBD frames
-            dtmp[dtmp==dmin]=0
-
-        
+        if dmin<0:
+            raise Exception("I dont know how to convert negative depth values to Kinect BGRD format. Please convert manualy.")
+        if dmin==1: 
+            dtmp[dtmp==1] = 0
+            
         depth = (dtmp*scale).astype(np.ushort)
         
         return (depth,bgr)

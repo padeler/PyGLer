@@ -59,8 +59,8 @@ class PyGLerModel(object):
         Note: cleanUp and __del__ must be called from the thread that owns the GLUT context.
         Calling from another thread will not release the resources and raise a NoContext exception.
         '''
-        if self.VAO!=None:
-            if self.vertexBuffers!=None:
+        if self.VAO is not None:
+            if self.vertexBuffers is not None:
                 GL.glDeleteBuffers(len(self.vertexBuffers),self.vertexBuffers)
                 self.vertexBuffers=None
             GL.glDeleteBuffers(len(self.VAO),self.VAO)
@@ -117,9 +117,9 @@ class PyGLerModel(object):
             self.vertices = vertices
 
         
-        if colors==None or self.uniformColor!=None:
+        if colors is None or self.uniformColor is not None:
             colors = np.empty((self.vertices.shape[0],3),dtype=np.float32)
-            if self.uniformColor==None:
+            if self.uniformColor is None:
                 colors[:,0:3] = (self.vertices[:,0:3]+1)/2.0
             else:
                 uc = self.uniformColor/255.0
