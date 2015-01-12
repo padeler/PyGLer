@@ -470,10 +470,8 @@ class GlutWindow(event.EventDispatcher):
 
         # Dispatch init event
         self.dispatch_event('on_init')
+        glut.glutMainLoop()
         
-        if not self._interactive:
-            glut.glutMainLoop()
-
 
     def stop(self):
         '''Exit mainloop'''
@@ -483,6 +481,5 @@ class GlutWindow(event.EventDispatcher):
             glut.glutLeaveMainLoop()
         else:
             raise RuntimeError("Your GLUT implementation does not allow to stops the main loop")
-
 
 

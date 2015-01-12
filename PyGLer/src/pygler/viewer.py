@@ -23,6 +23,7 @@ from gui.viewcontroller import ViewController
 from model import PyGLerModel
 from utils import CameraParams
 import time
+from time import sleep
 
 
 class PyGLer(object):
@@ -147,7 +148,7 @@ class PyGLer(object):
                     print "Exception while stopping GLUT window: ",e
                     print sys.exc_info()
             with self.actionCond:
-                self._captureRequested=False
+                self._stopRequested=False
                 self.actionCond.notifyAll()
 
                 
@@ -287,7 +288,7 @@ class PyGLer(object):
         try:
             self.started = True                
             self.window.start() # this call is blocking (calls the GLUTMainLoop)
-            
+                        
             # When stop is called we must release the resources
             print "Releasing Resourses"
             if self.useFBO==True:

@@ -48,8 +48,10 @@ class CameraParams(object):
         '''
         Camera Params constructor. The default values correspond to the default 
         Kinect camera instrinsics (provided by the OpenNI driver)
-        '''
         
+        legacyMode created a projection matrix that is compatible with the standard MBV projection matrix.
+         
+        '''
         self._width = width
         self._height = height
         self._cx = cx
@@ -66,7 +68,9 @@ class CameraParams(object):
         intr[0][0] = (2.0 * fx) / width;
         intr[0][1] = 0;
         intr[0][2] = -1 + (2 * cx) / width;
-        intr[1][1] = (-2 * fy) / height
+        
+        intr[1][1] = -(2 * fy) / height # FIXME This "-" is compatible with mbv but not standard. 
+            
         intr[1][2] = 1 - (2 * cy) / height
         intr[2][2] = 1;
         intr[3][3] = unit; # unit conversion -- If the extrinsics are in meters set unit=1000 to convert all to meters
@@ -76,6 +80,8 @@ class CameraParams(object):
         cpm[2][2] = zfar/(zfar - znear);
         cpm[2][3] = (-((zfar*znear)/(zfar - znear))) / unit;
         cpm[3][2] = 1;
+        
+
             
         projectionMat = cpm.dot(intr)
         
