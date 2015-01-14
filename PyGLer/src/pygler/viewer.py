@@ -20,7 +20,7 @@ from OpenGL.error import NoContext
 
 from graphics.shader import Shader
 from gui.viewcontroller import ViewController
-from model import PyGLerModel
+from model import PyGLerModel,Geometry
 from utils import CameraParams
 import time
 from time import sleep
@@ -109,14 +109,12 @@ class PyGLer(object):
 
     
     def redraw(self):
-        with self.lock:
-            if self.window!=None:
-                self._needsRedraw=True
+        self._needsRedraw=True
                 
     def on_idle(self,dt):
-        if self._needsRedraw==True:
-            self.window.redraw()
+        if self.started and self._needsRedraw==True:
             self._needsRedraw=False
+            self.window.redraw()
 
         if self._captureRequested==True:
             self.capturedTuple = self.captureRGBD()
@@ -367,12 +365,13 @@ class PyGLer(object):
         
     def _draw(self):
         
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         with self.lock:
-            for m in self.models:# TODO: Create model VAO on_idle
-                if m.needsVAOUpdate==True:  
-                    m.updateVAO(self.shader)
-                    
+            for m in self.models:
+                if m.geometry.needsVAOUpdate==True:  
+                    m.geometry.updateVAO(self.shader)
+                
+            GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+            for m in self.models:
                 self.shader.uniformf("singleColor",-1,-1,-1,1)
                 m.draw(self.shader,self.controller.showMesh,self.controller.showFaces,self.controller.showNormals)
 
@@ -457,8 +456,8 @@ if __name__ == '__main__':
                       ],np.uint32).reshape(-1,3)
     
     
-    m = PyGLerModel("Test",testV,triangles=testF, normals = ComputeNormals(testV,testF), normalScale=0.2, autoScale=False)
-    cube = PyGLerModel("Cube", vertices = cubeV, triangles=cubeF)
+    m = PyGLerModel("Test",Geometry(testV,triangles=testF, normals = ComputeNormals(testV,testF), normalScale=0.2, autoScale=False))
+    cube = PyGLerModel("Cube", Geometry(vertices = cubeV, triangles=cubeF))
     
     tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
     viewer.addModel(tri)

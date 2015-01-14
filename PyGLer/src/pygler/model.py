@@ -8,7 +8,17 @@ from OpenGL import GL
 from OpenGL.GL import ctypes
 
 
-class PyGLerModel(object):
+def EnsureDtype(**kwargs):
+    for name,mat in kwargs.iteritems():
+        if mat is not None and mat.dtype==np.float64:
+            raise StandardError("Error. ",name," dtype should be float32.")
+
+
+class Geometry(object):
+    '''
+    Geometry of a model. Contains vertices, faces, etc.
+    It can be shared by one or more PyGLerModel instances. 
+    '''
     
     VERTEX_VBO_INDEX=0
     COLOR_VBO_INDEX=1
@@ -20,141 +30,97 @@ class PyGLerModel(object):
     LINE_VAO=1
     NORMAL_VAO=2
     
-    '''
-    A Model that can be rendered by PyGLer.
-    Contains vertices, triangles, normals, colors, texture and a transformation on the model's coordinate space.
-     
-    '''
-    def __init__(self, name, vertices=None, modelM=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None, glDrawMethod = GL.GL_STATIC_DRAW, autoScale=True, uniformColor=None,bgrColor=True, normalScale=0.05):
-        '''
-        Constructor
-        '''
-
+    def __init__(self, vertices=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None, autoScale=True, uniformColor=None,bgrColor=True, normalScale=0.05,glDrawMethod = GL.GL_STATIC_DRAW):
+        self.VAO = None
         self.autoScale = autoScale
-        self._modelM = None
-        self.name = name
-        self.glDrawMethod = glDrawMethod
         self.vertices=None
         self.bgrColor = bgrColor
-        self.VAO = None
         self.normalScale = normalScale
         self.uniformColor=uniformColor
-        self.update(vertices, modelM, triangles, normals, colors, textureCoords, texture)
-        
-#         self.triangles = None
-#         self.textureCoords = None
-#         self.texture = None
-#         self.normals = None
-#         self.vertexCount = 0
+        self.glDrawMethod = glDrawMethod
+
+        self.update(vertices, triangles, normals, colors, textureCoords, texture)
     
-    def _ensureDtype(self,**kwargs):
-        for name,mat in kwargs.iteritems():
-            if mat is not None and mat.dtype==np.float64:
-                raise StandardError("Error. ",name," dtype should be float32.")
-            
-            
-    def cleanUp(self):
-        ''' 
-        Releases any OpenGL resources held by this Model
-        Note: cleanUp and __del__ must be called from the thread that owns the GLUT context.
-        Calling from another thread will not release the resources and raise a NoContext exception.
-        '''
-        if self.VAO is not None:
-            if self.vertexBuffers is not None:
-                GL.glDeleteBuffers(len(self.vertexBuffers),self.vertexBuffers)
-                self.vertexBuffers=None
-            GL.glDeleteBuffers(len(self.VAO),self.VAO)
-            self.VAO=None
-        self._modelM = None
-        
     
-        
-    def update(self, vertices=None, modelM=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None):
-        self.needsVAOUpdate=True
-        if vertices is None: 
-            return
-        
-        # FIXME: Ensure that the incoming data wont be changed before they are copied to the GPU.
-        # Maybe make a copy of everything in update() ? 
-        
-        
-        self._ensureDtype(vertices=vertices, modelM=modelM, triangles=triangles, 
-                           normals=normals, colors=colors, textureCoords=textureCoords, texture=texture)
+    def update(self, vertices=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None):
+        if vertices is not None: 
+            EnsureDtype(vertices=vertices, triangles=triangles, 
+                               normals=normals, colors=colors, textureCoords=textureCoords, texture=texture)
+    
+            # Ensure that the incoming data wont be changed before they are copied to the GPU.
+            # Make a copy of everything in update()  
+            
+            if triangles is not None:
+                triangles = np.copy(triangles)
+            if normals is not None:
+                normals = np.copy(normals)
+            if colors is not None:
+                colors = np.copy(colors)
+            if textureCoords is not None:
+                textureCoords = np.copy(textureCoords)
+            if texture is not None:
+                texture = np.copy(texture)
                 
-        if self.autoScale==True:
-            # Scale vertices such that object is contained in [-1:+1,-1:+1,-1:+1]
-            vertices = vertices.copy() # XXX take a copy of the parameter data. Dont change the original 
-            vmin, vmax =  vertices[:,0:3].min(), vertices[:,0:3].max()
-            vertices[:,0:3] = 2*(vertices[:,0:3]-vmin)/(vmax-vmin) - 1
+                    
+            if self.autoScale==True:
+                # Scale vertices such that object is contained in [-1:+1,-1:+1,-1:+1]
+                vmin, vmax =  vertices[:,0:3].min(), vertices[:,0:3].max()
+                vertices[:,0:3] = 2*(vertices[:,0:3]-vmin)/(vmax-vmin) - 1
+                    
             
-        if self._modelM is None and modelM is None: # Compute a translate matrix that centers the object.
-            vmin,vmax = vertices.min(0), vertices.max(0)
-            center = vmin + (vmax-vmin)/2
-            modelM = np.eye(4,dtype=np.float32)
-            modelM[0:3,3] = -center[0:3]
-        
-        if modelM is not None:
-            self._modelM = modelM.transpose().reshape(-1).tolist()
+            self.triangles = triangles
+            self.textureCoords = textureCoords
+            self.texture = texture
+            self.normals = normals
+            self.vertexCount = len(vertices)
+            
+            # if normals are supplied. Compute the vertices for the line segments that will represent them 
+            # and add them to the end of the vertices list
     
-        
-        self.triangles = triangles
-        self.textureCoords = textureCoords
-        self.texture = texture
-        self.normals = normals
-        self.vertexCount = len(vertices)
-        
-        # if normals are supplied. Compute the vertices for the line segments that will represent them 
-        # and add them to the end of the vertices list
-
-        if normals is not None:
-            if normals.shape!=vertices.shape:
-                raise StandardError("Normals array must have the same shape as the vertices array.")
-            
-            normalVertices = vertices + normals * self.normalScale 
-
-            self.vertices = np.concatenate((vertices,normalVertices))
-        else:
-            self.vertices = vertices
-
-        
-        if colors is None or self.uniformColor is not None:
-            colors = np.empty((self.vertices.shape[0],3),dtype=np.float32)
-            if self.uniformColor is None:
-                colors[:,0:3] = (self.vertices[:,0:3]+1)/2.0
+            if normals is not None:
+                if normals.shape!=vertices.shape:
+                    raise StandardError("Normals array must have the same shape as the vertices array.")
+                
+                normalVertices = vertices + normals * self.normalScale 
+    
+                self.vertices = np.concatenate((vertices,normalVertices))
             else:
-                uc = self.uniformColor/255.0
-                if self.bgrColor:
-                    uc = uc[::-1]
-                colors[:,0:3] = uc
+                self.vertices = vertices
+    
             
-        elif colors.dtype==np.ubyte: # convert to normalized float [0,1]
-            if self.bgrColor: # convert to RGB
-                colors = colors[:,3::-1]
-            colors = colors.astype(np.float32) / 255.0
-            
-        self.colors = colors
-        
+            if colors is None or self.uniformColor is not None:
+                colors = np.empty((self.vertices.shape[0],3),dtype=np.float32)
+                if self.uniformColor is None:
+                    colors[:,0:3] = (self.vertices[:,0:3]+1)/2.0
+                else:
+                    uc = self.uniformColor/255.0
+                    if self.bgrColor:
+                        uc = uc[::-1]
+                    colors[:,0:3] = uc
+                
+            elif colors.dtype==np.ubyte: # convert to normalized float [0,1]
+                if self.bgrColor: # convert to RGB
+                    colors = colors[:,3::-1]
+                colors = colors.astype(np.float32) / 255.0
+                
+            self.colors = colors
 
-    def setModelM(self, modelM):
-        if modelM is None or modelM.shape!=(4,4):
-            raise StandardError("Invalid model matrix")
+        self.needsVAOUpdate=True
         
-        self._modelM = modelM.transpose().reshape(-1).tolist()
-        
-    def createVAO(self, shader):
-        # Create VAO for this PyGLerModel
-        # create the VBO and put it in a VAO
-        # Create a new VAO (Vertex Array Object) and bind it
+    def createVAO(self):
+        # Create VAO for this Geometry
         self.VAO = GL.glGenVertexArrays(3)
         # Generate buffers to hold our vertices
         self.vertexBuffers = GL.glGenBuffers(5)
     
     def updateVAO(self,shader):
+        
         if self.vertices is None or self.needsVAOUpdate==False: 
             return
         
+        
         if self.VAO is None:
-            self.createVAO(shader)
+            self.createVAO()
         
         # ============ VAO for triangle mesh (or point cloud)
         GL.glBindVertexArray( self.VAO[self.MESH_VAO] )
@@ -280,15 +246,15 @@ class PyGLerModel(object):
             GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
          
         self.needsVAOUpdate=False
-    
-    def draw(self,shader,showMesh,showFaces,showNormals):
+
+    def draw(self,shader,flatModelM,showMesh,showFaces,showNormals):
         '''
-        Draw This PyGLerModel on the current OpenGL setup.
+        Draw this Geometry on the current OpenGL setup.
         '''
         if self.needsVAOUpdate==True:
             return
         try:
-            shader.uniform_matrixf("modelM", self._modelM)
+            shader.uniform_matrixf("modelM", flatModelM)
             
             if showMesh:
                 GL.glBindVertexArray(self.VAO[self.MESH_VAO])
@@ -310,6 +276,55 @@ class PyGLerModel(object):
 #             TODO: draw normals, etc here.
         finally:
             GL.glBindVertexArray(0)
+    
+    def cleanUp(self):
+        ''' 
+        Releases any OpenGL resources held by this Geometry
+        Note: cleanUp and __del__ must be called from the thread that owns the GLUT context.
+        Calling from another thread will not release the resources and raise a NoContext exception.
+        '''
+        if self.VAO is not None:
+            if self.vertexBuffers is not None:
+                GL.glDeleteBuffers(len(self.vertexBuffers),self.vertexBuffers)
+                self.vertexBuffers=None
+            GL.glDeleteBuffers(len(self.VAO),self.VAO)
+            self.VAO=None
+
+class PyGLerModel(object):
+    
+    '''
+    A Model that can be rendered by PyGLer.
+    It uses a Geometry instance which contains vertices, triangles, normals, colors, texture.
+    
+    The model handles the transformations of the geometry on the model's coordinate space.
+     
+    '''
+    def __init__(self, name, geometry=None, modelM=None):
+        self.name = name
+        self.geometry=geometry
+
+        self.setModelM(modelM)
+            
+    def cleanUp(self):
+        self.geometry.cleanUp()
+        self._modelM = None        
+
+    def setModelM(self, modelM):
+        if modelM is None: # auto center
+            vmin,vmax = self.geometry.vertices.min(0), self.geometry.vertices.max(0)
+            center = vmin + (vmax-vmin)/2
+            
+            modelM = np.eye(4,dtype=np.float32)
+            modelM[0:3,3] = -center[0:3]
+            self._modelM = modelM.transpose().reshape(-1).tolist()
+
+        elif modelM.shape==(4,4):
+            self._modelM = modelM.transpose().reshape(-1).tolist()
+        else: 
+            raise StandardError("Invalid model matrix")
+        
+    def draw(self,shader,showMesh,showFaces,showNormals):
+        self.geometry.draw(shader,self._modelM,showMesh,showFaces,showNormals)   
 
     def __eq__(self,other):
         return isinstance(other, PyGLerModel) and self.name==other.name        
@@ -331,5 +346,5 @@ class PyGLerModel(object):
             from utils import ComputeNormals
             normals = ComputeNormals(vertices,faces)
     
-
-        return PyGLerModel(filename, vertices, triangles=faces, normals=normals)
+        geometry = Geometry(vertices, triangles=faces, normals=normals)
+        return PyGLerModel(filename, geometry)
