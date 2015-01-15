@@ -346,7 +346,6 @@ class PyGLer(object):
         red,green,blue,alpha = 1,1,1,1
         GL.glClearColor(red,green,blue,alpha)
         
-        
         if self.useFBO==True:
             GL.glBindFramebuffer(GL.GL_FRAMEBUFFER,self.fbo)
             GL.glDrawBuffers(2,self.renderBufferAt)
@@ -369,7 +368,7 @@ class PyGLer(object):
             for m in self.models:
                 if m.geometry.needsVAOUpdate==True:  
                     m.geometry.updateVAO(self.shader)
-                
+                            
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
             for m in self.models:
                 self.shader.uniformf("singleColor",-1,-1,-1,1)
@@ -380,6 +379,7 @@ class PyGLer(object):
         self.width = width
         self.height = height
         GL.glViewport( 0, 0, width, height )
+        self.redraw()
         
         
     @staticmethod
@@ -396,9 +396,6 @@ class PyGLer(object):
         depth = (dtmp*scale).astype(np.ushort)
         
         return (depth,bgr)
-
-        
-
 
 
 from utils import ComputeNormals

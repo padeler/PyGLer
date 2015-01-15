@@ -12,9 +12,9 @@ from OpenGL import GL
 
 class ViewController(object):
     '''
-    Creates a view matrix based on user input
+    Creates a view matrix based on mouse and keyboard input.
     '''
-    
+
     def __init__(self, initialViewM=np.eye(4,dtype=np.float32)):
         '''
         Constructor
@@ -57,10 +57,7 @@ class ViewController(object):
         self.showFaces = False
         self.showNormals = False
         
-        
-        pass
-    
-    
+            
     def info(self):
         print "OpenGL Version: ",GL.glGetString(GL.GL_VERSION)
         print "OpenGL Vendor: ",GL.glGetString(GL.GL_VENDOR)
@@ -111,10 +108,8 @@ class ViewController(object):
         self.parentWindow.redraw()
     
     def on_key_press(self,symbol, modifiers):
-#         print "Key press  ",symbol," => ",modifiers
         self.keyDict.get(symbol, self.unmapped)();
         self.parentWindow.redraw()
-        pass
     
     def on_mouse_scroll(self,dx, dy,s0,s1):
         self._zoom += self.zoomMult * s1

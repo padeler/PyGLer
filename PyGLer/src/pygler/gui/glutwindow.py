@@ -22,7 +22,6 @@ class GlutWindow(event.EventDispatcher):
     Initializes glut and handles pyopengl callbacks
     '''
 
-
     def __init__(self, size=None, position=None, title=None, fullscreen=False):
         '''
         Constructor
@@ -53,7 +52,7 @@ class GlutWindow(event.EventDispatcher):
         self._id = glut.glutCreateWindow( self._title )
         glut.glutShowWindow()        
         
-        glut.glutDisplayFunc( self._display )
+        glut.glutDisplayFunc( self.redraw )
         glut.glutReshapeFunc( self._reshape )
         glut.glutKeyboardFunc( self._keyboard )
         glut.glutKeyboardUpFunc( self._keyboard_up )
@@ -69,7 +68,6 @@ class GlutWindow(event.EventDispatcher):
         
         GL.glPolygonOffset(1, 1);
         GL.glEnable(GL.GL_POLYGON_OFFSET_FILL);
-          
 
         GL.glPointSize(2)
         GL.glEnable(GL.GL_PROGRAM_POINT_SIZE)
@@ -103,8 +101,6 @@ class GlutWindow(event.EventDispatcher):
         
 # Event handler methods (registered in init)
 
-
-    
     def _keyboard( self, code, x, y ):
         symbol = self._keyboard_translate(code)
         modifiers = glut.glutGetModifiers()
@@ -180,12 +176,6 @@ class GlutWindow(event.EventDispatcher):
         elif code==glut.GLUT_KEY_INSERT:   return key.INSERT
         
         return ascii
-
-
-    def _display( self ):
-        self.dispatch_event('on_draw')
-        glut.glutSwapBuffers()
-
 
     def _idle(self):
         t = glut.glutGet(glut.GLUT_ELAPSED_TIME)
@@ -295,16 +285,10 @@ class GlutWindow(event.EventDispatcher):
         roughly), the window will dispatch a ``draw`` event and swaps the
         buffers if double buffered.
         '''
-
-        self.dispatch_event('on_draw')
+        self.dispatch_event('on_draw') # first redraw then swap buffers
         glut.glutSwapBuffers()
         
         
-    def refresh(self):
-        ''' Refresh the window content by swapping back and fron buffer.. '''
-        glut.glutSwapBuffers()
-
-
     def setFullscreen(self, state):
         '''
         If **state** is True, the set_fullscreen() method requests the window
