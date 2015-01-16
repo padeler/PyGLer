@@ -30,14 +30,18 @@ class Geometry(object):
     LINE_VAO=1
     NORMAL_VAO=2
     
-    def __init__(self, vertices=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None, autoScale=True, uniformColor=None,bgrColor=True, normalScale=0.05,glDrawMethod = GL.GL_STATIC_DRAW):
+    def __init__(self, vertices=None, triangles=None, normals=None, colors=None, textureCoords=None, texture=None, autoScale=True, bgrColor=True, alpha=1.0, normalScale=0.05,glDrawMethod = GL.GL_STATIC_DRAW):
         self.VAO = None
         self.autoScale = autoScale
         self.vertices=None
         self.bgrColor = bgrColor
         self.normalScale = normalScale
-        self.uniformColor=uniformColor
+        if alpha <0.0 or alpha > 1.0:
+                raise StandardError("Alpha values must be in the range of [0.0,1.0]")
+ 
+        self.alpha = alpha
         self.glDrawMethod = glDrawMethod
+        
 
         self.update(vertices, triangles, normals, colors, textureCoords, texture)
     
@@ -88,22 +92,33 @@ class Geometry(object):
                 self.vertices = vertices
     
             
-            if colors is None or self.uniformColor is not None:
-                colors = np.empty((self.vertices.shape[0],3),dtype=np.float32)
-                if self.uniformColor is None:
-                    colors[:,0:3] = (self.vertices[:,0:3]+1)/2.0
-                else:
-                    uc = self.uniformColor/255.0
-                    if self.bgrColor:
-                        uc = uc[::-1]
-                    colors[:,0:3] = uc
+            if colors is None:
+                colors = np.empty((self.vertices.shape[0],4),dtype=np.float32)
+                colors[:,0:3] = (self.vertices[:,0:3]+1)/2.0
+                colors[:,3] = self.alpha # add alpha
+                self.colors = colors                
+            else:
+                if colors.dtype!=np.float32:
+                    colors = colors.astype(np.float32) / 255.0
+                if len(colors.shape)==1:
+                    colors = colors[np.newaxis,:]
+                    
+                if self.bgrColor: # convert to RGB from BGR
+                    colors[:,:3] = colors[:,2::-1]
+                    
+                if colors.shape[0]==1: #single color
+                    colorsTmp = np.empty((self.vertices.shape[0],3),dtype=np.float32)
+                    colorsTmp[:,:3] = colors[0,:3]
+                    colors = colorsTmp
+
+                if colors.shape[1]==3 and self.alpha<1.0: # add alpha
+                    colorsRGBA = np.empty((colors.shape[0],4),dtype=np.float32)
+                    colorsRGBA[:,:3] = colors
+                    colorsRGBA[:,3] = self.alpha
+                    colors = colorsRGBA
                 
-            elif colors.dtype==np.ubyte: # convert to normalized float [0,1]
-                if self.bgrColor: # convert to RGB
-                    colors = colors[:,3::-1]
-                colors = colors.astype(np.float32) / 255.0
-                
-            self.colors = colors
+                self.colors = colors
+            
 
         self.needsVAOUpdate=True
         

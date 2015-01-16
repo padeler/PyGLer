@@ -66,6 +66,9 @@ class GlutWindow(event.EventDispatcher):
             
         GL.glEnable(GL.GL_DEPTH_TEST)
         
+        GL.glEnable(GL.GL_BLEND)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+        
         GL.glPolygonOffset(1, 1);
         GL.glEnable(GL.GL_POLYGON_OFFSET_FILL);
 

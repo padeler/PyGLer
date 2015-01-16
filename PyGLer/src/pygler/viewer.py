@@ -31,7 +31,6 @@ class PyGLer(object):
     
     vertexCode = """#version 330
             
-                //uniform float end_fog;
                 uniform vec4 singleColor;
                 uniform mat4 projM;
                 uniform mat4 viewM;
@@ -42,8 +41,6 @@ class PyGLer(object):
                 out vec4 vcolor;
                 out vec4 vposition;
                 void main() {
-                    float fog; // amount of fog to apply
-                    float fog_coord; // distance for fog calculation...
 
                     gl_Position = projM * viewM * modelM * position;
                     vposition = gl_Position;
@@ -453,9 +450,9 @@ if __name__ == '__main__':
                       ],np.uint32).reshape(-1,3)
     
     
-    m = PyGLerModel("Test",Geometry(testV,triangles=testF, normals = ComputeNormals(testV,testF), normalScale=0.2, autoScale=False))
-    cube = PyGLerModel("Cube", Geometry(vertices = cubeV, triangles=cubeF))
-    
+    m = PyGLerModel("Test",Geometry(vertices=testV,triangles=testF,autoScale=False, alpha=0.5))
+    cube = PyGLerModel("Cube", Geometry(vertices = cubeV, triangles=cubeF,normals = ComputeNormals(vertices=cubeV,faces=cubeF),alpha=0.3))
+     
     tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
     viewer.addModel(tri)
     viewer.addModel(cube)
