@@ -53,7 +53,8 @@ class Geometry(object):
     
             # Ensure that the incoming data wont be changed before they are copied to the GPU.
             # Make a copy of everything in update()  
-            
+            if vertices is not None:
+                vertices = np.copy(vertices)
             if triangles is not None:
                 triangles = np.copy(triangles)
             if normals is not None:
@@ -93,8 +94,13 @@ class Geometry(object):
     
             
             if colors is None:
-                colors = np.empty((self.vertices.shape[0],4),dtype=np.float32)
-                colors[:,0:3] = (self.vertices[:,0:3]+1)/2.0
+                v = self.vertices.shape[0]
+                colors = np.empty((v,4),dtype=np.float32)
+                if self.normals is not None: # use the normals to color the surface if available
+                    colors[:v/2,0:3] = (self.normals[:,0:3]+1)/2.0
+                else: # fallback to the vertices coords.
+                    colors[:,0:3] = (self.vertices[:,0:3]+1)/2.0
+                    
                 colors[:,3] = self.alpha # add alpha
                 self.colors = colors                
             else:
@@ -306,7 +312,6 @@ class Geometry(object):
             self.VAO=None
 
 class PyGLerModel(object):
-    
     '''
     A Model that can be rendered by PyGLer.
     It uses a Geometry instance which contains vertices, triangles, normals, colors, texture.
@@ -345,7 +350,7 @@ class PyGLerModel(object):
         return isinstance(other, PyGLerModel) and self.name==other.name        
 
     @staticmethod
-    def LoadObj(filename, computeNormals=False):
+    def LoadObj(filename, computeNormals=False, autoScale=False):
         '''
         Load vertices and faces from a wavefront .obj file and generate normals.
         '''
@@ -361,5 +366,5 @@ class PyGLerModel(object):
             from utils import ComputeNormals
             normals = ComputeNormals(vertices,faces)
     
-        geometry = Geometry(vertices, triangles=faces, normals=normals)
+        geometry = Geometry(vertices, triangles=faces, normals=normals,autoScale=autoScale)
         return PyGLerModel(filename, geometry)

@@ -9,6 +9,7 @@ Use the CameraParams class to set the intrinsics for the viewport camera of PyGL
 '''
 
 import numpy as np
+from pygler.model import PyGLerModel,Geometry
 
 def normalize_Nx3(arr):
     ''' Normalize a numpy array of 3 component vectors shape=(n,3) '''
@@ -37,6 +38,95 @@ def ComputeNormals(vertices, faces):
     r = normalize_Nx3(norm)
         
     return r;
+
+
+def CreateAxisModel(name="axis",thickness=0.01,length=1.0,colorX=[0,0,255],colorY=[0,255,0],colorZ=[255,0,0],alpha=1.0):
+    '''
+    Create a PyGLerModel instance that represents a 3D axis. 
+    Usefull for visualizing camera positions and starting positions of models
+    '''
+    s = thickness
+    lr = length / thickness
+    
+    cubeV = np.array([-s, s, s,
+                       s, s, s,
+                       s,-s, s,
+                      -s,-s, s,
+                      -s,-s,-s,
+                      -s, s,-s,
+                       s, s,-s,
+                       s,-s,-s],dtype='f').reshape(-1,3)
+    
+    cubeF = np.array([0,1,2, 2,3,0, # front , lengthen [z coord] for Z+ axis 
+                      2,3,4, 4,7,2, # bottom
+                      0,5,4, 4,3,0, # left
+                      7,2,1, 1,6,7, # right , lengthen [x coord] for X+axis 
+                      5,6,7, 7,4,5, # back
+                      0,5,6, 6,1,0  # top , lenghten [y coord] for Y+ axis
+                                    ],dtype=np.uint32)
+#         .reshape(-1,3)
+
+    
+    
+    axisV = np.empty((24,3),dtype=np.float32)
+    axisF = np.empty((36*3),dtype=np.uint32) # each axis has 6 faces with 2 triangles each face so 36 points for each axis
+    
+    Xaxis = np.copy(cubeV)
+    Xaxis[cubeF[6*3:8*3],0] *= lr
+
+    Yaxis = np.copy(cubeV)
+    Yaxis[cubeF[10*3:12*3],1] *= lr
+    
+    Zaxis = np.copy(cubeV)
+    Zaxis[cubeF[0*3:2*3],2] *= lr
+    
+    axisV[0*8:1*8] = Xaxis
+    axisV[1*8:2*8] = Yaxis
+    axisV[2*8:3*8] = Zaxis
+    
+    for i in range(3):
+        axisF[(i*36):((i+1)*36)] = np.copy(cubeF) + i*8 
+    
+    
+    # colors.
+    colors = np.empty((24,3),dtype=np.ubyte)
+    colors[0*8:1*8] = colorX
+    colors[1*8:2*8] = colorY
+    colors[2*8:3*8] = colorZ
+    
+    return PyGLerModel(name, geometry=Geometry(axisV, axisF, colors=colors,alpha=alpha,autoScale=False),modelM=np.eye(4,dtype=np.float32))
+    
+
+def CreateCubeModel(name="cube",scale=[1.0,1.0,1.0],colors=[0,255,0],alpha=1.0):
+    '''
+    Create a PyGLerModel instance that represents a unit cube scaled by a given value along each axis. 
+    Usefull for visualizing positions of models relative to each other.
+    '''
+    
+    s = 0.5
+    cubeV = np.array([-s, s, s,
+                       s, s, s,
+                       s,-s, s,
+                      -s,-s, s,
+                      -s,-s,-s,
+                      -s, s,-s,
+                       s, s,-s,
+                       s,-s,-s],dtype='f').reshape(-1,3)
+    
+    cubeF = np.array([0,1,2, 2,3,0, # front , lengthen [z coord] for Z+ axis 
+                      2,3,4, 4,7,2, # bottom
+                      0,5,4, 4,3,0, # left
+                      7,2,1, 1,6,7, # right , lengthen [x coord] for X+axis 
+                      5,6,7, 7,4,5, # back
+                      0,5,6, 6,1,0  # top , lenghten [y coord] for Y+ axis
+                                    ],dtype=np.uint32)
+
+    
+    cubeV *= scale
+        
+    colors = np.array(colors,dtype=np.ubyte)
+    
+    return PyGLerModel(name, geometry=Geometry(cubeV, cubeF, colors=colors,autoScale=False,alpha=alpha),modelM=np.eye(4,dtype=np.float32))
 
 
 class CameraParams(object):
@@ -90,7 +180,5 @@ class CameraParams(object):
     @property
     def projectionMat(self):
         return self._projectionMat
-    
-    
     
     

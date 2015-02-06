@@ -24,6 +24,7 @@ from model import PyGLerModel,Geometry
 from utils import CameraParams
 import time
 from time import sleep
+from pygler.utils import CreateAxisModel, CreateCubeModel
 
 
 class PyGLer(object):
@@ -401,22 +402,6 @@ if __name__ == '__main__':
     print "Opening window"
     viewer = PyGLer()
     
-    s = 0.5                                                                
-    cubeV = np.array([-s, s, s,
-                   s, s, s,
-                   s,-s, s,
-                  -s,-s, s,
-                  -s,-s,-s,
-                  -s, s,-s,
-                   s, s,-s,
-                   s,-s,-s],dtype='f').reshape(-1,3)
-    
-    cubeF = np.array([0,1,2, 2,3,0, # front
-                      2,3,4, 4,7,2, # bottom
-                      0,5,4, 4,3,0, # left
-                      7,2,1, 1,6,7, # right
-                      5,6,7, 7,4,5, # back
-                      0,5,6, 6,1,0 ],dtype=np.uint32).reshape(-1,3)
                                      
     testV = np.array( [
             [  0, 1, 0], #triangle
@@ -451,11 +436,14 @@ if __name__ == '__main__':
     
     
     m = PyGLerModel("Test",Geometry(vertices=testV,triangles=testF,autoScale=False, alpha=0.5))
-    cube = PyGLerModel("Cube", Geometry(vertices = cubeV, triangles=cubeF,normals = ComputeNormals(vertices=cubeV,faces=cubeF),alpha=0.3))
+    cube = CreateCubeModel("cube",scale=4.0,alpha=0.3)
      
     tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
+    
+    axis = CreateAxisModel()
+    viewer.addModel(axis)
     viewer.addModel(tri)
     viewer.addModel(cube)
-    viewer.addModel(m)
+#     viewer.addModel(m)
 
     viewer.start()
