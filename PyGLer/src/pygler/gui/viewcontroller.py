@@ -50,7 +50,7 @@ class ViewController(object):
                         }
         self.translateMult = -1.0
         self.dragMult = -0.01
-        self.zoomMult = 0.1
+        self.zoomMult = 0.01
         self._zoom = 1.0
         
         self.showMesh = True
