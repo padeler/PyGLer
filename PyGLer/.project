@@ -3,6 +3,7 @@
 	<name>PyGLer</name>
 	<comment></comment>
 	<projects>
+		<project>PyCVCommons</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

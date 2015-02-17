@@ -22,7 +22,7 @@ class GlutWindow(event.EventDispatcher):
     Initializes glut and handles pyopengl callbacks
     '''
 
-    def __init__(self, size=None, position=None, title=None, fullscreen=False):
+    def __init__(self, size=None, position=None, title=None, fullscreen=False,enableAlpha=True):
         '''
         Constructor
         '''
@@ -67,7 +67,8 @@ class GlutWindow(event.EventDispatcher):
         GL.glEnable(GL.GL_DEPTH_TEST)
         
         GL.glEnable(GL.GL_BLEND)
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+        if enableAlpha:
+            GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
         
         GL.glPolygonOffset(1, 1);
         GL.glEnable(GL.GL_POLYGON_OFFSET_FILL);

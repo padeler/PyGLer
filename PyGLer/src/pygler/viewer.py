@@ -254,7 +254,7 @@ class PyGLer(object):
         with self.lock:
             try:
                 # Initialize the GUI Window (GlutWindow)
-                self.window = GlutWindow((self.width,self.height), title="PyGLer")
+                self.window = GlutWindow((self.width,self.height), title="PyGLer",enableAlpha=not self.useFBO)
                 self.window.event(self.on_resize)
                 self.window.event(self.on_draw)
                 self.window.event(self.on_idle)
@@ -381,26 +381,27 @@ class PyGLer(object):
         
         
     @staticmethod
-    def Convert2BGRD(rawRGBAXYZW, scale=1000.0):
+    def Convert2BGRD(rawRGBAXYZW, scale=1000.0, depthMin=2,depthMax=10000.0):
         rgba,xyzw = rawRGBAXYZW
         bgr = (rgba[:,:,2::-1]*255.0).astype(np.ubyte)
         dtmp = xyzw[:,:,3]
-        dmin = dtmp.min()
-        if dmin<0:
-            raise Exception("I dont know how to convert negative depth values to Kinect BGRD format. Please convert manualy.")
-        if dmin==1: 
-            dtmp[dtmp==1] = 0
+        dtmp[dtmp<depthMin] = 0
+        dtmp[dtmp>depthMax] = 0
+        
             
         depth = (dtmp*scale).astype(np.ushort)
         
         return (depth,bgr)
 
 
+from cvcommons import image
+
 from utils import ComputeNormals
+
 
 if __name__ == '__main__':
     print "Opening window"
-    viewer = PyGLer()
+    viewer = PyGLer(useFBO=True)
     
                                      
     testV = np.array( [
@@ -441,9 +442,19 @@ if __name__ == '__main__':
     tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
     
     axis = CreateAxisModel()
-    viewer.addModel(axis)
+#     viewer.addModel(axis)
     viewer.addModel(tri)
-    viewer.addModel(cube)
+#     viewer.addModel(cube)
 #     viewer.addModel(m)
 
     viewer.start()
+    
+    while True:
+        depth,bgr = viewer.Convert2BGRD(viewer.capture())
+        image.show("Depth",depth,0)
+    
+    
+    
+    
+    
+    
