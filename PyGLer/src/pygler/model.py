@@ -228,7 +228,7 @@ class Geometry(object):
             GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         
 
-        if self.normals!=None: 
+        if self.normals is not None: 
             # ============ VAO for Normals 
             GL.glBindVertexArray( self.VAO[self.NORMAL_VAO] )
               
