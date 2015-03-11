@@ -97,13 +97,13 @@ def CreateAxisModel(name="axis",thickness=0.01,length=1.0,colorX=[0,0,255],color
     return PyGLerModel(name, geometry=Geometry(axisV, axisF, colors=colors,alpha=alpha,autoScale=False),modelM=np.eye(4,dtype=np.float32))
     
 
-def CreateCubeModel(name="cube",scale=[1.0,1.0,1.0],colors=[0,255,0],alpha=1.0):
+def CreateCubeModel(name="cube",side=1.0,scale=[1.0,1.0,1.0],colors=[0,255,0],alpha=0.9):
     '''
     Create a PyGLerModel instance that represents a unit cube scaled by a given value along each axis. 
     Usefull for visualizing positions of models relative to each other.
     '''
     
-    s = 0.5
+    s = side/2.0
     cubeV = np.array([-s, s, s,
                        s, s, s,
                        s,-s, s,

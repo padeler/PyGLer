@@ -127,6 +127,13 @@ class Geometry(object):
             
 
         self.needsVAOUpdate=True
+    
+    def getVertices(self):
+        if self.normals is None:
+            return np.copy(self.vertices)
+        else:
+            s = self.normals.shape[0]
+            return np.copy(self.vertices[:s,:])
         
     def createVAO(self):
         # Create VAO for this Geometry
