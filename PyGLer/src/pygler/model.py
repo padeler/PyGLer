@@ -329,9 +329,20 @@ class PyGLerModel(object):
     def __init__(self, name, geometry=None, modelM=None):
         self.name = name
         self.geometry=geometry
+        self.visible_=True
 
         self.setModelM(modelM)
-            
+        
+    
+    @property
+    def visible(self):
+        return self.visible_ 
+    
+    @visible.setter
+    def visible(self,v):
+        self.visible_ = v
+    
+    
     def cleanUp(self):
         self.geometry.cleanUp()
         self._modelM = None        
@@ -351,7 +362,8 @@ class PyGLerModel(object):
             raise StandardError("Invalid model matrix")
         
     def draw(self,shader,showMesh,showFaces,showNormals):
-        self.geometry.draw(shader,self._modelM,showMesh,showFaces,showNormals)   
+        if self.visible_:
+            self.geometry.draw(shader,self._modelM,showMesh,showFaces,showNormals)   
 
     def __eq__(self,other):
         return isinstance(other, PyGLerModel) and self.name==other.name        
