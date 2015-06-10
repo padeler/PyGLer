@@ -154,7 +154,7 @@ class CameraParams(object):
         intr[0][1] = 0;
         intr[0][2] = -1 + (2 * cx) / width;
         
-        intr[1][1] = (2 * fy) / height # FIXME This "-" is compatible with mbv but not standard. 
+        intr[1][1] = -(2 * fy) / height # FIXME This "-" is compatible with mbv but not standard. 
             
         intr[1][2] = 1 - (2 * cy) / height
         intr[2][2] = 1;
