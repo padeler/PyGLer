@@ -45,8 +45,9 @@ def CreateAxisModel(name="axis",thickness=0.01,length=1.0,colorX=[255,0,0],color
     Create a PyGLerModel instance that represents a 3D axis. 
     Usefull for visualizing camera positions and starting positions of models
     '''
-    s = thickness
-    lr = length / thickness
+    
+    s = thickness/2.0
+    lr = length / s
     
     cubeV = np.array([-s, s, s,
                        s, s, s,
