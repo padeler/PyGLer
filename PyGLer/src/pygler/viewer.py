@@ -237,9 +237,7 @@ class PyGLer(object):
 
         #unbind FBO
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER,0)
-        
         print "FBO initialized correctly."
-        
         
 #         # allocate linear memory to copy the rendering output from FBO
 #         self.PBO = GL.glGenBuffers(3)
@@ -401,7 +399,7 @@ from utils import ComputeNormals
 
 if __name__ == '__main__':
     print "Opening window"
-    viewer = PyGLer(useFBO=False)
+    viewer = PyGLer(useFBO=True)
     
                                      
     testV = np.array( [
@@ -441,17 +439,17 @@ if __name__ == '__main__':
      
     tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
     
-    axis = CreateAxisModel(thickness=0.05)
-    viewer.addModel(axis)
-#     viewer.addModel(tri)
+#     axis = CreateAxisModel(thickness=0.05)
+#     viewer.addModel(axis)
+    viewer.addModel(tri)
 #     viewer.addModel(cube)
 #     viewer.addModel(m)
 
     viewer.start()
-#     
+     
 #     while True:
 #         depth,bgr = viewer.Convert2BGRD(viewer.capture())
-#         image.show("Depth",depth,0)
+#         image.show("Depth",depth,30)
     
     
     
