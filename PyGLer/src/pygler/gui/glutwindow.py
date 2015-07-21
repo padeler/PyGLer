@@ -22,7 +22,7 @@ class GlutWindow(event.EventDispatcher):
     Initializes glut and handles pyopengl callbacks
     '''
 
-    def __init__(self, size=None, position=None, title=None, fullscreen=False,enableAlpha=True):
+    def __init__(self, size=None, position=None, title=None, fullscreen=False,enableAlpha=True,pointSize=2):
         '''
         Constructor
         '''
@@ -73,7 +73,7 @@ class GlutWindow(event.EventDispatcher):
         GL.glPolygonOffset(1, 1);
         GL.glEnable(GL.GL_POLYGON_OFFSET_FILL);
 
-        GL.glPointSize(2)
+        GL.glPointSize(pointSize)
         GL.glEnable(GL.GL_PROGRAM_POINT_SIZE)
             
         if size is not None:

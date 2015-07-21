@@ -67,6 +67,8 @@ class PyGLer(object):
                 }"""
     
     
+
+        
     def __init__(self, windowWidth=640,windowHeight=480, useFBO=False,cameraParams=CameraParams(), initViewM=np.eye(4,dtype=np.float32)):
         self.width=windowWidth
         self.height=windowHeight
@@ -86,9 +88,19 @@ class PyGLer(object):
         self._model2Remove=None
         self.fbo = None
         self.renderBuffers = None
-
+        self.pointSize_ = 2
         self.controller = ViewController(initialViewM=initViewM)
     
+    @property
+    def pointSize(self):
+        return self.pointSize_ 
+    
+    @pointSize.setter
+    def pointSize(self,v):
+        if self.started:
+            raise BaseException("GL point size cannot be set after the viewer is started.")
+        self.pointSize_ = v
+
     
     def stop(self):
         ''' 
@@ -252,7 +264,7 @@ class PyGLer(object):
         with self.lock:
             try:
                 # Initialize the GUI Window (GlutWindow)
-                self.window = GlutWindow((self.width,self.height), title="PyGLer",enableAlpha=not self.useFBO)
+                self.window = GlutWindow((self.width,self.height), title="PyGLer",enableAlpha=not self.useFBO,pointSize=self.pointSize_)
                 self.window.event(self.on_resize)
                 self.window.event(self.on_draw)
                 self.window.event(self.on_idle)
