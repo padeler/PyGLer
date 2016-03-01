@@ -23,52 +23,11 @@ from gui.viewcontroller import ViewController
 from model import PyGLerModel,Geometry
 from utils import CameraParams
 import time
-from time import sleep
-from pygler.utils import CreateAxisModel, CreateCubeModel
 
+from pygler import FragmentShaderCode, VertexShaderCode
 
 class PyGLer(object):
-    
-    
-    vertexCode = """#version 330
-            
-                uniform vec4 singleColor;
-                uniform mat4 projM;
-                uniform mat4 viewM;
-                uniform mat4 modelM;
-                
-                in vec4 position;
-                in vec4 color;
-                out vec4 vcolor;
-                out vec4 vposition;
-                void main() {
 
-                    gl_Position = projM * viewM * modelM * position;
-                    vposition = gl_Position;
-                    if(singleColor.x==-1)
-                    {
-                        vcolor = color;
-                    }
-                    else
-                    {
-                        vcolor = singleColor;
-                    }
-                }"""
-            
-                    
-    fragmentCode = """#version 330
-            in vec4 vcolor;
-            in vec4 vposition;
-            out vec4 fragColor;
-            out vec4 fragPos;
-            void main() {
-                    fragColor = vcolor;
-                    fragPos = vposition;
-                }"""
-    
-    
-
-        
     def __init__(self, windowWidth=640,windowHeight=480, useFBO=False,cameraParams=CameraParams(), initViewM=np.eye(4,dtype=np.float32)):
         self.width=windowWidth
         self.height=windowHeight
@@ -88,18 +47,18 @@ class PyGLer(object):
         self._model2Remove=None
         self.fbo = None
         self.renderBuffers = None
-        self.pointSize_ = 2
+        self._pointSize = 2
         self.controller = ViewController(initialViewM=initViewM)
     
     @property
     def pointSize(self):
-        return self.pointSize_ 
+        return self._pointSize
     
     @pointSize.setter
     def pointSize(self,v):
         if self.started:
             raise BaseException("GL point size cannot be set after the viewer is started.")
-        self.pointSize_ = v
+        self._pointSize = v
 
     
     def stop(self):
@@ -126,13 +85,13 @@ class PyGLer(object):
             self._needsRedraw=False
             self.window.redraw()
 
-        if self._captureRequested==True:
+        if self._captureRequested is True:
             self.capturedTuple = self.captureRGBD()
             with self.actionCond:
                 self._captureRequested=False
                 self.actionCond.notifyAll()
         
-        if self._model2Remove!=None:
+        if self._model2Remove is not None:
             with self.lock:
                 try:
                     self.models.remove(self._model2Remove)
@@ -264,18 +223,16 @@ class PyGLer(object):
         with self.lock:
             try:
                 # Initialize the GUI Window (GlutWindow)
-                self.window = GlutWindow((self.width,self.height), title="PyGLer",enableAlpha=not self.useFBO,pointSize=self.pointSize_)
+                self.window = GlutWindow((self.width,self.height), title="PyGLer", enableAlpha=not self.useFBO, pointSize=self._pointSize)
                 self.window.event(self.on_resize)
                 self.window.event(self.on_draw)
                 self.window.event(self.on_idle)
                 
-                if self.useFBO==True:
+                if self.useFBO is True:
                     self._initFBO()
                 
-#                 Create the Shader program.
-#                 vertexCode = open("vertex.glsl","r").read()
-#                 fragmentCode = open("fragment.glsl","r").read()
-                self.shader = Shader(self.vertexCode, self.fragmentCode)
+                # Create the Shader program.
+                self.shader = Shader(VertexShaderCode, FragmentShaderCode)
                 
                 projMat = self._cameraParams.projectionMat
                 projMat = projMat.reshape(-1).tolist() 
@@ -288,7 +245,7 @@ class PyGLer(object):
                 
             except Exception,e:
                 self.window = None # failed to create window
-                print "Exception in PyGLer run. Failed to initialize GlutWindow: ",e
+                print "Exception in PyGLer run. Failed to initialize GlutWindow: \n",e
                 raise StandardError("Failed to initialize GlutWindow.",e)
         
         try:
@@ -297,7 +254,7 @@ class PyGLer(object):
                         
             # When stop is called we must release the resources
             print "Releasing Resourses"
-            if self.useFBO==True:
+            if self.useFBO is True:
                 self._releaseFBO()
             
             for m in self.models:
@@ -346,7 +303,7 @@ class PyGLer(object):
             self.removeModel(m)
                     
     def on_draw(self):
-        if self.started==False:
+        if self.started is False:
             return
         
         view = self.controller.getViewM()
@@ -354,7 +311,7 @@ class PyGLer(object):
         red,green,blue,alpha = 1,1,1,1
         GL.glClearColor(red,green,blue,alpha)
         
-        if self.useFBO==True:
+        if self.useFBO is True:
             GL.glBindFramebuffer(GL.GL_FRAMEBUFFER,self.fbo)
             GL.glDrawBuffers(2,self.renderBufferAt)
             self._draw() # Draw on the FBO
@@ -374,7 +331,7 @@ class PyGLer(object):
         
         with self.lock:
             for m in self.models:
-                if m.geometry.needsVAOUpdate==True:  
+                if m.geometry.needsVAOUpdate is True:
                     m.geometry.updateVAO(self.shader)
                             
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -404,10 +361,8 @@ class PyGLer(object):
         return (depth,bgr)
 
 
-from cvcommons import image
-
 from utils import ComputeNormals
-
+from pygler.utils import CreateAxisModel, CreateCubeModel
 
 if __name__ == '__main__':
     print "Opening window"
@@ -451,11 +406,11 @@ if __name__ == '__main__':
      
     tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
     
-#     axis = CreateAxisModel(thickness=0.05)
-#     viewer.addModel(axis)
+    axis = CreateAxisModel(thickness=0.05)
+    viewer.addModel(axis)
     viewer.addModel(tri)
-#     viewer.addModel(cube)
-#     viewer.addModel(m)
+    viewer.addModel(cube)
+    viewer.addModel(m)
 
     viewer.start()
      
