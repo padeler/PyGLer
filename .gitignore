@@ -1,2 +1,6 @@
-PyGLer/.ipynb_checkpoints
-PyGLer/.idea
+.ipynb_checkpoints
+.idea
+media
+*.pyc
+
+
