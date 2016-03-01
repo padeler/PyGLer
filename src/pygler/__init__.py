@@ -7,7 +7,7 @@ Python - OpenGL - Viewer (PyGLer)
 
 VertexShaderCode = \
 """
-#version 100
+#version 130
 
 uniform vec4 singleColor;
 uniform mat4 projM;
@@ -16,8 +16,8 @@ uniform mat4 modelM;
 
 in vec4 position;
 in vec4 color;
-varying out vec4 vcolor;
-varying out vec4 vposition;
+out vec4 vcolor;
+out vec4 vposition;
 void main() {
 
     gl_Position = projM * viewM * modelM * position;
@@ -37,14 +37,12 @@ void main() {
 
 FragmentShaderCode = \
 """
-#version 100
-
-precision highp float;
+#version 130
 
 in vec4 vcolor;
 in vec4 vposition;
-varying out vec4 fragColor;
-varying out vec4 fragPos;
+out vec4 fragColor;
+out vec4 fragPos;
 
 void main() {
     fragColor = vcolor;
