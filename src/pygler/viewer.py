@@ -366,7 +366,7 @@ from pygler.utils import CreateAxisModel, CreateCubeModel
 
 if __name__ == '__main__':
     print "Opening window"
-    viewer = PyGLer(useFBO=True)
+    viewer = PyGLer(useFBO=False)
     
                                      
     testV = np.array( [
