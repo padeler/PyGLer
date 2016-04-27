@@ -182,6 +182,9 @@ class Trackball(object):
         return np.array(_q_rotmatrix(self._rotation),dtype=np.float32).reshape(4,4).transpose()
 
 
+    def setRotation(self,quat):
+        self._rotation = quat
+
     def getOrientation(self):
         ''' Return current computed orientation (theta,phi). ''' 
 

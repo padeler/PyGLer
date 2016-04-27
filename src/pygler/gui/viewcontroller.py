@@ -15,12 +15,12 @@ class ViewController(object):
     Creates a view matrix based on mouse and keyboard input.
     '''
 
-    def __init__(self, initialViewM=np.eye(4,dtype=np.float32)):
+    def __init__(self):
         '''
         Constructor
         '''
-        self._initialViewM = initialViewM
-        self._viewM = initialViewM.copy() 
+        self._initialViewM = np.eye(4,dtype=np.float32)
+        self._viewM = np.copy(self._initialViewM)
         
         self.trackball = Trackball()
         self.keyDict = { 
@@ -214,5 +214,21 @@ class ViewController(object):
         scaleM = np.diag([self._zoom,self._zoom,self._zoom,1.0])
         viewM = self._viewM.dot(self.trackball.getRotMat().dot(scaleM))
         return viewM.transpose().reshape(-1).tolist()
-    
+
+
+    def setCameraPosition(self,trXYZ,rotQuat=[1,0,0,0],scale=1):
+        '''
+        set the camera orientation. This will not set the reset location.
+        :param trXYZ:
+        :param rotQuat: in the form of: x,y,z,w
+        :param scale:
+        :return:
+        '''
+        tr = np.eye(4,dtype=np.float32)
+        tr[0:3,3] = np.array(trXYZ,dtype=np.float32)
+        self._viewM = tr
+        self._zoom = scale
+        self.trackball.setRotation(rotQuat)
+
+
     

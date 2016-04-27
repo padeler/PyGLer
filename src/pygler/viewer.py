@@ -28,7 +28,7 @@ from pygler import FragmentShaderCode, VertexShaderCode
 
 class PyGLer(object):
 
-    def __init__(self, windowWidth=640,windowHeight=480, useFBO=False,cameraParams=CameraParams(), initViewM=np.eye(4,dtype=np.float32)):
+    def __init__(self, windowWidth=640,windowHeight=480, useFBO=False,cameraParams=CameraParams()):
         self.width=windowWidth
         self.height=windowHeight
 
@@ -48,7 +48,7 @@ class PyGLer(object):
         self.fbo = None
         self.renderBuffers = None
         self._pointSize = 2
-        self.controller = ViewController(initialViewM=initViewM)
+        self.controller = ViewController()
     
     @property
     def pointSize(self):
