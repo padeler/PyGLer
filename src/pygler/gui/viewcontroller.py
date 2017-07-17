@@ -231,4 +231,7 @@ class ViewController(object):
         self.trackball.setRotation(rotQuat)
 
 
-    
+    def getCameraPosition(self):
+        quat = self.trackball.getRotation()
+        tr = self._viewM[0:3,3]
+        return tr,quat,self._zoom

@@ -185,6 +185,9 @@ class Trackball(object):
     def setRotation(self,quat):
         self._rotation = quat
 
+    def getRotation(self):
+        return self._rotation
+
     def getOrientation(self):
         ''' Return current computed orientation (theta,phi). ''' 
 
