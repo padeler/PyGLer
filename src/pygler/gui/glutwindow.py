@@ -13,9 +13,9 @@ Copyright (C) 2009-2011  Nicolas P. Rougier. All rights reserved.
 
 import OpenGL.GLUT as glut
 from OpenGL import GL
-import key
-import mouse
-import event
+from . import key
+from . import mouse
+from . import event
 
 class GlutWindow(event.EventDispatcher):
     '''
@@ -111,7 +111,7 @@ class GlutWindow(event.EventDispatcher):
         modifiers = self._modifiers_translate(modifiers)
         state= self.dispatch_event('on_key_press', symbol, modifiers)
         if not state and symbol == key.ESCAPE: #FIXME 
-            raise Exception," FIX EXIT MODE " #sys.exit()
+            raise Exception(" FIX EXIT MODE ") #sys.exit()
 
     def _keyboard_up( self, code, x, y ):
         modifiers = glut.glutGetModifiers()
@@ -453,7 +453,7 @@ class GlutWindow(event.EventDispatcher):
 
         # Start idle only if necessary
         for item in self._event_stack:
-            if 'on_idle' in item.keys():
+            if 'on_idle' in list(item.keys()):
                 glut.glutIdleFunc(self._idle)
 
         # Dispatch init event

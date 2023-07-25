@@ -7,7 +7,7 @@ Created on Mar 28, 2014
 import numpy as np
 from pygler.gui import key, mouse
 
-from trackball import Trackball
+from .trackball import Trackball
 from OpenGL import GL
 
 class ViewController(object):
@@ -59,12 +59,12 @@ class ViewController(object):
         
             
     def info(self):
-        print "OpenGL Version: ",GL.glGetString(GL.GL_VERSION)
-        print "OpenGL Vendor: ",GL.glGetString(GL.GL_VENDOR)
-        print "OpenGL Renderer: ",GL.glGetString(GL.GL_RENDERER)
-        print "OpenGL GLSL Version: ",GL.glGetString(GL.GL_SHADING_LANGUAGE_VERSION)
-        print "OpenGL Extensions: \n",GL.glGetString(GL.GL_EXTENSIONS).split()
-        print "FBO Max color attachments: ",GL.glGetIntegerv(GL.GL_MAX_COLOR_ATTACHMENTS)
+        print("OpenGL Version: ",GL.glGetString(GL.GL_VERSION))
+        print("OpenGL Vendor: ",GL.glGetString(GL.GL_VENDOR))
+        print("OpenGL Renderer: ",GL.glGetString(GL.GL_RENDERER))
+        print("OpenGL GLSL Version: ",GL.glGetString(GL.GL_SHADING_LANGUAGE_VERSION))
+        print("OpenGL Extensions: \n",GL.glGetString(GL.GL_EXTENSIONS).split())
+        print("FBO Max color attachments: ",GL.glGetIntegerv(GL.GL_MAX_COLOR_ATTACHMENTS))
 #         print "FBO Max Width: ",GL.glGetInteger(GL.GL_MAX_FRAMEBUFFER_WIDTH)
 #         print "FBO Max Height: ",GL.glGetInteger(GL.GL_MAX_FRAMEBUFFER_HEIGHT)
 #         print "FBO Max Samples: ",GL.glGetInteger(GL.GL_MAX_FRAMEBUFFER_SAMPLES)
@@ -165,7 +165,7 @@ class ViewController(object):
         self.parentWindow=window
         
     def reset(self):
-        print "Reset View."
+        print("Reset View.")
         self._viewM = self._initialViewM.copy()
         self._zoom = 1.0
         self.trackball.setOrientation(0, 0)

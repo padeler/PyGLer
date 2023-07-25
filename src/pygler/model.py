@@ -9,7 +9,7 @@ from OpenGL.GL import ctypes
 
 
 def EnsureDtype(**kwargs):
-    for name,mat in kwargs.iteritems():
+    for name,mat in kwargs.items():
         if mat is not None and mat.dtype==np.float64:
             raise StandardError("Error. ",name," dtype should be float32.")
 
@@ -95,14 +95,15 @@ class Geometry(object):
             
             if colors is None:
                 v = self.vertices.shape[0]
-                colors = np.empty((v,4),dtype=np.float32)
-                if self.normals is not None: # use the normals to color the surface if available
-                    colors[:v/2,0:3] = (self.normals[:,0:3]+1)/2.0
-                else: # fallback to the vertices coords.
-                    colors[:,0:3] = (self.vertices[:,0:3]+1)/2.0
-                    
-                colors[:,3] = self.alpha # add alpha
-                self.colors = colors                
+                if v>0:
+                    colors = np.empty((v,4),dtype=np.float32)
+                    if self.normals is not None: # use the normals to color the surface if available
+                        colors[:int(v/2), 0:3] = (self.normals[:,0:3]+1)/2.0
+                    else: # fallback to the vertices coords.
+                        colors[:, 0:3] = (self.vertices[:,0:3]+1)/2.0
+                        
+                    colors[:,3] = self.alpha # add alpha
+                    self.colors = colors                
             else:
                 if colors.dtype!=np.float32:
                     colors = colors.astype(np.float32) / 255.0
@@ -369,7 +370,7 @@ class PyGLerModel(object):
         return isinstance(other, PyGLerModel) and self.name==other.name        
 
     @staticmethod
-    def LoadObj(filename, computeNormals=False, autoScale=False):
+    def LoadObj(filename, computeNormals=False, autoScale=False, colors=None):
         '''
         Load vertices and faces from a wavefront .obj file and generate normals.
         '''
@@ -385,5 +386,5 @@ class PyGLerModel(object):
             from utils import ComputeNormals
             normals = ComputeNormals(vertices,faces)
     
-        geometry = Geometry(vertices, triangles=faces, normals=normals,autoScale=autoScale)
+        geometry = Geometry(vertices, triangles=faces, normals=normals, colors=colors,autoScale=autoScale)
         return PyGLerModel(filename, geometry)
