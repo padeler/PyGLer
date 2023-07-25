@@ -1,6 +1,4 @@
 .ipynb_checkpoints
-.idea
 media
 *.pyc
-
-
+pyenv

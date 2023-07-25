@@ -111,7 +111,7 @@ class GlutWindow(event.EventDispatcher):
         modifiers = self._modifiers_translate(modifiers)
         state= self.dispatch_event('on_key_press', symbol, modifiers)
         if not state and symbol == key.ESCAPE: #FIXME 
-            raise Exception(" FIX EXIT MODE ") #sys.exit()
+            glut.glutLeaveMainLoop()
 
     def _keyboard_up( self, code, x, y ):
         modifiers = glut.glutGetModifiers()
