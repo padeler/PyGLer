@@ -5,7 +5,7 @@ Code based on GLUMPY (https://code.google.com/p/glumpy)
 
 '''
 
-from glutwindow import GlutWindow
+from .glutwindow import GlutWindow
 
 GlutWindow.register_event_type('on_key_press')
 GlutWindow.register_event_type('on_key_release')

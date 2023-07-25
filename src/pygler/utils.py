@@ -23,7 +23,7 @@ def ComputeNormals(vertices, faces):
     #Create a zeroed array with the same type and shape as our vertices i.e., per vertex normal
     norm = np.zeros( vertices.shape, dtype=vertices.dtype )
     #Create an indexed view into the vertex array using the array of three indices for triangles
-    tris = vertices[faces]
+    tris = np.copy(vertices[faces])
     #Calculate the normal for all the triangles, by taking the cross product of the vectors v1-v0, and v2-v0 in each triangle             
     n = np.cross( tris[::,1 ] - tris[::,0]  , tris[::,2 ] - tris[::,0] )# n is now an array of normals per triangle. The length of each normal is dependent the vertices, 
     # we need to normalize these, so that our next step weights each normal equally.
@@ -37,7 +37,7 @@ def ComputeNormals(vertices, faces):
     norm[ faces[:,2] ] += k
     r = normalize_Nx3(norm)
         
-    return r;
+    return r
 
 
 def CreateAxisModel(name="axis",thickness=0.01,length=1.0,colorX=[255,0,0],colorY=[0,255,0],colorZ=[0,0,255],alpha=1.0):

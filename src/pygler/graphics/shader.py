@@ -117,14 +117,11 @@ class Shader:
         # if compilation failed, raise exception and print the log
         if not status:
             if shader_type == gl.GL_VERTEX_SHADER:
-                raise ShaderException, \
-                    'Vertex compilation: ' + gl.glGetShaderInfoLog(shader)
+                raise ShaderException('Vertex compilation: ' + gl.glGetShaderInfoLog(shader))
             elif shader_type == gl.GL_FRAGMENT_SHADER:
-                raise ShaderException, \
-                    'Fragment compilation:' + gl.glGetShaderInfoLog(shader)
+                raise ShaderException('Fragment compilation:' + gl.glGetShaderInfoLog(shader))
             else:
-                raise ShaderException, \
-                    gl.glGetShaderInfoLog(shader)
+                raise ShaderException(gl.glGetShaderInfoLog(shader))
         else:
             # all is well, so attach the shader to the program
             gl.glAttachShader(self.handle, shader)
@@ -146,7 +143,7 @@ class Shader:
             # create a buffer for the log
             log = gl.glGetProgramInfoLog(self.handle) #, temp, None, buffer)
 
-            raise ShaderException, 'Linking: '+ log
+            raise ShaderException('Linking: '+ log)
         else:
             # all is well, so we are linked
             self.linked = True

@@ -2,6 +2,8 @@
 Python - OpenGL - Viewer (PyGLer)
 
 '''
+from . import gui
+
 
 
 
@@ -50,5 +52,3 @@ void main() {
 }
 
 """
-
-

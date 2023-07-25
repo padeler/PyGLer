@@ -14,7 +14,7 @@ import sys
 
 import numpy as np
 
-from gui.glutwindow import GlutWindow
+from gui import GlutWindow
 from OpenGL import GL
 from OpenGL.error import NoContext
 
@@ -98,8 +98,8 @@ class PyGLer(object):
                     self._model2Remove.cleanUp()
                     self._needsRedraw=True
                 except ValueError:
-                    print "No Model named ",self._model2Remove.name
-                    print sys.exc_info()
+                    print("No Model named ",self._model2Remove.name)
+                    print(sys.exc_info())
                     
             with self.actionCond:
                 self._model2Remove=None
@@ -112,8 +112,8 @@ class PyGLer(object):
                     self.window.stop()    
                 except Exception:
                     e = sys.exc_info()[0]
-                    print "Exception while stopping GLUT window: ",e
-                    print sys.exc_info()
+                    print("Exception while stopping GLUT window: ",e)
+                    print(sys.exc_info())
             with self.actionCond:
                 self._stopRequested=False
                 self.actionCond.notifyAll()
@@ -146,8 +146,8 @@ class PyGLer(object):
             return [img,None,None]
 
         except NoContext:
-            print "No OpenGL Context found. If you are calling from a different thread use the capture() method instead."
-            print sys.exc_info()
+            print("No OpenGL Context found. If you are calling from a different thread use the capture() method instead.")
+            print(sys.exc_info())
         
     def capture(self):
         '''
@@ -204,11 +204,11 @@ class PyGLer(object):
         # make sure that the new FBO  is complete
         status = GL.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER)
         if status != GL.GL_FRAMEBUFFER_COMPLETE:
-            raise StandardError("Failed to properly setup FBO. OpenGL returned FBO status: ",status)
+            raise Exception("Failed to properly setup FBO. OpenGL returned FBO status: ",status)
 
         #unbind FBO
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER,0)
-        print "FBO initialized correctly."
+        print("FBO initialized correctly.")
         
 #         # allocate linear memory to copy the rendering output from FBO
 #         self.PBO = GL.glGenBuffers(3)
@@ -243,17 +243,17 @@ class PyGLer(object):
                 self.controller.registerEvents(self.window)
                 self.window.show()
                 
-            except Exception,e:
+            except Exception as e:
                 self.window = None # failed to create window
-                print "Exception in PyGLer run. Failed to initialize GlutWindow: \n",e
-                raise StandardError("Failed to initialize GlutWindow.",e)
+                print("Exception in PyGLer run. Failed to initialize GlutWindow: \n",e)
+                raise Exception("Failed to initialize GlutWindow.",e)
         
         try:
             self.started = True                
             self.window.start() # this call is blocking (calls the GLUTMainLoop)
                         
             # When stop is called we must release the resources
-            print "Releasing Resourses"
+            print("Releasing Resourses")
             if self.useFBO is True:
                 self._releaseFBO()
             
@@ -264,8 +264,8 @@ class PyGLer(object):
             
         except Exception:
             e = sys.exc_info()[0]
-            print "Exception in GlUT event loop: ",e
-            print sys.exc_info()
+            print("Exception in GlUT event loop: ",e)
+            print(sys.exc_info())
         finally:
             self.started = False
             # Release resources
@@ -292,7 +292,7 @@ class PyGLer(object):
         '''
         with self.actionCond:
             if self._model2Remove!=None:
-                raise StandardError("Failed to remove model. There is already a model pending for removal.")
+                raise Exception("Failed to remove model. There is already a model pending for removal.")
             self._model2Remove = model 
             while self._model2Remove!=None: # while model is not removed
                 self.actionCond.wait()
@@ -365,7 +365,7 @@ from utils import ComputeNormals
 from pygler.utils import CreateAxisModel, CreateCubeModel
 
 if __name__ == '__main__':
-    print "Opening window"
+    print("Opening window")
     viewer = PyGLer(useFBO=True)
     
                                      
@@ -404,11 +404,11 @@ if __name__ == '__main__':
     m = PyGLerModel("Test",Geometry(vertices=testV,triangles=testF,autoScale=False, alpha=0.5))
     cube = CreateCubeModel("cube",scale=4.0,alpha=0.3)
      
-    tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
+    # tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
     
     axis = CreateAxisModel(thickness=0.05)
     viewer.addModel(axis)
-    viewer.addModel(tri)
+    # viewer.addModel(tri)
     viewer.addModel(cube)
     viewer.addModel(m)
 
