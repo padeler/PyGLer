@@ -363,10 +363,21 @@ class PyGLer(object):
 
 from utils import ComputeNormals
 from pygler.utils import CreateAxisModel, CreateCubeModel
+from clize import run
 
-if __name__ == '__main__':
-    print("Opening window")
-    viewer = PyGLer(useFBO=True)
+def view(*, model, no_fbo=False):
+    print(f"Viewing {model}")
+    
+    viewer = PyGLer(useFBO=not no_fbo)
+
+    m = PyGLerModel.LoadObj(model,computeNormals=True)
+    viewer.addModel(m)
+    viewer.start()
+    pass
+
+def test(*, no_fbo=False, axis=False, cube=False):
+    print("Testing PyGLer...")
+    viewer = PyGLer(useFBO=not no_fbo)
     
                                      
     testV = np.array( [
@@ -402,15 +413,13 @@ if __name__ == '__main__':
     
     
     m = PyGLerModel("Test",Geometry(vertices=testV,triangles=testF,autoScale=False, alpha=0.5))
-    cube = CreateCubeModel("cube",scale=4.0,alpha=0.3)
-     
-    # tri = PyGLerModel.LoadObj("triceratops.obj",computeNormals=True)
-    
-    axis = CreateAxisModel(thickness=0.05)
-    viewer.addModel(axis)
-    # viewer.addModel(tri)
-    viewer.addModel(cube)
     viewer.addModel(m)
+    
+    if cube:
+        viewer.addModel(CreateCubeModel("cube",scale=4.0,alpha=0.3))
+     
+    if axis:
+        viewer.addModel(CreateAxisModel(thickness=0.05))
 
     viewer.start()
      
@@ -418,6 +427,9 @@ if __name__ == '__main__':
 #         depth,bgr = viewer.Convert2BGRD(viewer.capture())
 #         image.show("Depth",depth,30)
     
+
+if __name__ == '__main__':
+    run(view,test)
     
     
     

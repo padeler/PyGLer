@@ -11,7 +11,7 @@ from OpenGL.GL import ctypes
 def EnsureDtype(**kwargs):
     for name,mat in kwargs.items():
         if mat is not None and mat.dtype==np.float64:
-            raise StandardError("Error. ",name," dtype should be float32.")
+            raise Exception("Error. {} dtype should be float32.".format(name))
 
 
 class Geometry(object):
@@ -37,7 +37,7 @@ class Geometry(object):
         self.bgrColor = bgrColor
         self.normalScale = normalScale
         if alpha <0.0 or alpha > 1.0:
-                raise StandardError("Alpha values must be in the range of [0.0,1.0]")
+                raise Exception("Alpha values must be in the range of [0.0,1.0]")
  
         self.alpha = alpha
         self.glDrawMethod = glDrawMethod
@@ -84,7 +84,7 @@ class Geometry(object):
     
             if normals is not None:
                 if normals.shape!=vertices.shape:
-                    raise StandardError("Normals array must have the same shape as the vertices array.")
+                    raise Exception("Normals array must have the same shape as the vertices array.")
                 
                 normalVertices = vertices + normals * self.normalScale 
     
@@ -360,7 +360,7 @@ class PyGLerModel(object):
         elif modelM.shape==(4,4):
             self._modelM = modelM.transpose().reshape(-1).tolist()
         else: 
-            raise StandardError("Invalid model matrix")
+            raise Exception("Invalid model matrix")
         
     def draw(self,shader,showMesh,showFaces,showNormals):
         if self.visible_:
@@ -378,8 +378,10 @@ class PyGLerModel(object):
                                               ('points', np.float32, 3)])
 
         # Get vertices and faces
-        vertices = data['points'][data['type'] == 'v']
-        faces = (data['points'][data['type'] == 'f']-1).astype(np.uint32)
+        vertices = data['points'][data['type'] == b'v']
+        faces = (data['points'][data['type'] == b'f']-1).astype(np.uint32)
+
+        print(f"Loaded {len(vertices)} vertices and {len(faces)} faces from {filename}")
 
         normals = None
         if computeNormals:
