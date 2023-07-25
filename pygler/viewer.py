@@ -262,8 +262,7 @@ class PyGLer(object):
             
             self.window=None
             
-        except Exception:
-            e = sys.exc_info()[0]
+        except Exception as e:
             print("Exception in GlUT event loop: ",e)
             print(sys.exc_info())
         finally:
@@ -375,7 +374,7 @@ def view(*, model, no_fbo=False, compute_normals=False, show_axis=False):
 
     if show_axis:
         viewer.addModel(CreateAxisModel(thickness=0.05))
-        
+
     viewer.start()
 
 
