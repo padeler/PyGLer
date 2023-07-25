@@ -365,17 +365,23 @@ from utils import ComputeNormals
 from pygler.utils import CreateAxisModel, CreateCubeModel
 from clize import run
 
-def view(*, model, no_fbo=False):
+def view(*, model, no_fbo=False, compute_normals=False, show_axis=False):
     print(f"Viewing {model}")
 
     viewer = PyGLer(useFBO=not no_fbo)
 
-    m = PyGLerModel.from_file(model,computeNormals=False)
+    m = PyGLerModel.from_file(model,computeNormals=compute_normals)
     viewer.addModel(m)
+
+    if show_axis:
+        viewer.addModel(CreateAxisModel(thickness=0.05))
+        
     viewer.start()
+
+
     pass
 
-def test(*, no_fbo=False, axis=False, cube=False):
+def test(*, no_fbo=False, show_axis=False, show_cube=False):
     print("Testing PyGLer...")
     viewer = PyGLer(useFBO=not no_fbo)
     
@@ -415,10 +421,10 @@ def test(*, no_fbo=False, axis=False, cube=False):
     m = PyGLerModel("Test",Geometry(vertices=testV,triangles=testF,autoScale=False, alpha=0.5))
     viewer.addModel(m)
     
-    if cube:
+    if show_cube:
         viewer.addModel(CreateCubeModel("cube",scale=4.0,alpha=0.3))
      
-    if axis:
+    if show_axis:
         viewer.addModel(CreateAxisModel(thickness=0.05))
 
     viewer.start()

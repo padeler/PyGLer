@@ -383,6 +383,8 @@ class PyGLerModel(object):
         :return: A PyGLerModel instance
 
         '''
+        import time
+        start = time.time()
         if filename.endswith(".obj"):
             data = np.genfromtxt(filename, dtype=[('type', np.character, 1),
                                                 ('points', np.float32, 3)])
@@ -404,6 +406,7 @@ class PyGLerModel(object):
             colors = np.array(colors).transpose()
             vertices = points
             faces = None
+            print(f"Loaded {len(vertices)} vertices from {filename}")
 
         normals = None
         if computeNormals:
@@ -411,4 +414,6 @@ class PyGLerModel(object):
             normals = ComputeNormals(vertices,faces)
             
         geometry = Geometry(vertices, triangles=faces, normals=normals, colors=colors,autoScale=autoScale)
+        print(f"Elapsed time: {time.time()-start:.2f} seconds")
+    
         return PyGLerModel(filename, geometry)
