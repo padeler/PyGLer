@@ -130,7 +130,10 @@ class CameraParams(object):
     Virtual Camera used to for the PyGLer Viewport.
     '''
     
-    def __init__(self,width=640,height=480,cx=320,cy=240,fx=575.81573,fy=575.81573,znear=1.0,zfar=10000.0,unit=1.0):
+    def __init__(self,width=640,height=480,
+                    cx=320,cy=240,fx=575.81573,fy=575.81573,
+                    znear=1.0,zfar=10000.0,unit=1.0, 
+                    position=[0, 0, 0], rotation=[0, 0, 0]):
         '''
         Camera Params constructor. The default values correspond to the default 
         Kinect camera instrinsics (provided by the OpenNI driver)
@@ -138,12 +141,12 @@ class CameraParams(object):
         legacyMode created a projection matrix that is compatible with the standard MBV projection matrix.
          
         '''
-        self._width = width
-        self._height = height
-        self._cx = cx
-        self._cy = cy
-        self._fx = fx
-        self._fy = fy
+        self.width = width
+        self.height = height
+        self.cx = cx
+        self.cy = cy
+        self.fx = fx
+        self.fy = fy
         
         self._unit=unit
         self._zfar=zfar
@@ -173,6 +176,13 @@ class CameraParams(object):
         
         self._projectionMat = projectionMat.transpose()
 
+    @staticmethod
+    def from_file(calib_file):
+        import yaml
+        with open(calib_file) as f:
+            calib = yaml.safe_load(f)
+        return CameraParams(**calib)
+    
     @property
     def projectionMat(self):
         return self._projectionMat

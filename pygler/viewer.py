@@ -223,7 +223,7 @@ class PyGLer(object):
         with self.lock:
             try:
                 # Initialize the GUI Window (GlutWindow)
-                self.window = GlutWindow((self.width,self.height), title="PyGLer", enableAlpha=not self.useFBO, pointSize=self._pointSize)
+                self.window = GlutWindow((self.width, self.height), title="PyGLer", enableAlpha=not self.useFBO, pointSize=self._pointSize)
                 self.window.event(self.on_resize)
                 self.window.event(self.on_draw)
                 self.window.event(self.on_idle)
@@ -364,12 +364,23 @@ from utils import ComputeNormals
 from pygler.utils import CreateAxisModel, CreateCubeModel
 from clize import run
 
-def view(*, model, no_fbo=False, compute_normals=False, show_axis=False):
-    print(f"Viewing {model}")
+def view(model_path, *, no_fbo=False, compute_normals=False, show_axis=False, camera_params=None, no_autocenter=False):
+    print(f"Viewing {model_path}")
 
-    viewer = PyGLer(useFBO=not no_fbo)
+    if camera_params is not None:
+        camera = CameraParams.from_file(camera_params)
+    else:
+        camera = CameraParams()
 
-    m = PyGLerModel.from_file(model,computeNormals=compute_normals)
+    
+    viewer = PyGLer(useFBO=not no_fbo, windowWidth=camera.width, windowHeight=camera.height, cameraParams=camera)
+
+    if no_autocenter:
+        modelM = np.eye(4)
+    else:
+        modelM = None
+
+    m = PyGLerModel.from_file(model_path,computeNormals=compute_normals, modelM=modelM)
     viewer.addModel(m)
 
     if show_axis:

@@ -1,0 +1,17 @@
+# Camera Calibration Parameters
+# ----------------------------
+
+width: 1920
+height: 1080
+cx: 960.0
+cy: 540.0
+fx: 575.81573
+fy: 575.81573
+znear: 1.0
+zfar: 10000.0
+unit: 1.0
+
+# Extrinsic Parameters
+# --------------------
+position: [0.0, 0.0, 0.0]
+rotation: [0.0, 0.0, 0.0]

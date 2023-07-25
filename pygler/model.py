@@ -370,12 +370,12 @@ class PyGLerModel(object):
         return isinstance(other, PyGLerModel) and self.name==other.name        
 
     @staticmethod
-    def from_file(filename, computeNormals=False, autoScale=False):
+    def from_file(filename, computeNormals=False, autoScale=False, modelM=None):
         '''
         Load model from file
         Supported types: 
          Wavefront (.obj) with vertices and faces (no color).
-         e57 point cloud with color (no faces) (using the pye57 library)
+         e57 point cloud with optional color (no faces) (using the pye57 library)
 
         :param filename: The file to load
         :param computeNormals: If True, compute normals for the model
@@ -399,21 +399,26 @@ class PyGLerModel(object):
         elif filename.endswith(".e57"):
             import pye57
             e57 = pye57.E57(filename)
+            
             scan = e57.read_scan(0, colors=True, ignore_missing_fields=True)
             points = scan["cartesianX"], scan["cartesianY"], scan["cartesianZ"]
             points = np.array(points).transpose().astype(np.float32)
-            colors = scan["colorRed"], scan["colorGreen"], scan["colorBlue"]
-            colors = np.array(colors).transpose()
+            if scan.get("colorRed", None) is not None: # Assuming that if one color is present, all are present
+                colors = scan["colorRed"], scan["colorGreen"], scan["colorBlue"]
+                colors = np.array(colors).transpose()
+            else:
+                colors = None
+                
             vertices = points
             faces = None
             print(f"Loaded {len(vertices)} vertices from {filename}")
 
         normals = None
-        if computeNormals:
+        if computeNormals and faces is not None:
             from utils import ComputeNormals
             normals = ComputeNormals(vertices,faces)
             
         geometry = Geometry(vertices, triangles=faces, normals=normals, colors=colors,autoScale=autoScale)
         print(f"Elapsed time: {time.time()-start:.2f} seconds")
     
-        return PyGLerModel(filename, geometry)
+        return PyGLerModel(filename, geometry, modelM=modelM)
