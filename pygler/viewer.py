@@ -367,10 +367,10 @@ from clize import run
 
 def view(*, model, no_fbo=False):
     print(f"Viewing {model}")
-    
+
     viewer = PyGLer(useFBO=not no_fbo)
 
-    m = PyGLerModel.LoadObj(model,computeNormals=True)
+    m = PyGLerModel.from_file(model,computeNormals=False)
     viewer.addModel(m)
     viewer.start()
     pass

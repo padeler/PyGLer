@@ -370,23 +370,45 @@ class PyGLerModel(object):
         return isinstance(other, PyGLerModel) and self.name==other.name        
 
     @staticmethod
-    def LoadObj(filename, computeNormals=False, autoScale=False, colors=None):
+    def from_file(filename, computeNormals=False, autoScale=False):
         '''
-        Load vertices and faces from a wavefront .obj file and generate normals.
+        Load model from file
+        Supported types: 
+         Wavefront (.obj) with vertices and faces (no color).
+         e57 point cloud with color (no faces) (using the pye57 library)
+
+        :param filename: The file to load
+        :param computeNormals: If True, compute normals for the model
+        :param autoScale: If True, scale the model to fit in the [-1:+1,-1:+1,-1:+1] cube
+        :return: A PyGLerModel instance
+
         '''
-        data = np.genfromtxt(filename, dtype=[('type', np.character, 1),
-                                              ('points', np.float32, 3)])
+        if filename.endswith(".obj"):
+            data = np.genfromtxt(filename, dtype=[('type', np.character, 1),
+                                                ('points', np.float32, 3)])
 
-        # Get vertices and faces
-        vertices = data['points'][data['type'] == b'v']
-        faces = (data['points'][data['type'] == b'f']-1).astype(np.uint32)
+            # Get vertices and faces
+            vertices = data['points'][data['type'] == b'v']
+            faces = (data['points'][data['type'] == b'f']-1).astype(np.uint32)
 
-        print(f"Loaded {len(vertices)} vertices and {len(faces)} faces from {filename}")
+            print(f"Loaded {len(vertices)} vertices and {len(faces)} faces from {filename}")
+            colors = None
+
+        elif filename.endswith(".e57"):
+            import pye57
+            e57 = pye57.E57(filename)
+            scan = e57.read_scan(0, colors=True, ignore_missing_fields=True)
+            points = scan["cartesianX"], scan["cartesianY"], scan["cartesianZ"]
+            points = np.array(points).transpose().astype(np.float32)
+            colors = scan["colorRed"], scan["colorGreen"], scan["colorBlue"]
+            colors = np.array(colors).transpose()
+            vertices = points
+            faces = None
 
         normals = None
         if computeNormals:
             from utils import ComputeNormals
             normals = ComputeNormals(vertices,faces)
-    
+            
         geometry = Geometry(vertices, triangles=faces, normals=normals, colors=colors,autoScale=autoScale)
         return PyGLerModel(filename, geometry)

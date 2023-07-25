@@ -1,0 +1,5 @@
+clize==5.0.2
+numpy==1.25.1
+pye57==0.4.1
+PyOpenGL==3.1.7
+pyquaternion==0.9.9
