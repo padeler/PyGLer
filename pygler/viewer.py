@@ -14,14 +14,14 @@ import sys
 
 import numpy as np
 
-from gui import GlutWindow
+from pygler.gui import GlutWindow
 from OpenGL import GL
 from OpenGL.error import NoContext
 
-from graphics.shader import Shader
-from gui.viewcontroller import ViewController
-from model import PyGLerModel,Geometry
-from utils import CameraParams
+from pygler.graphics.shader import Shader
+from pygler.gui.viewcontroller import ViewController
+from pygler.model import PyGLerModel,Geometry
+from pygler.utils import CameraParams
 import time
 
 from pygler import FragmentShaderCode, VertexShaderCode
@@ -360,7 +360,6 @@ class PyGLer(object):
         return (depth,bgr)
 
 
-from utils import ComputeNormals
 from pygler.utils import CreateAxisModel, CreateCubeModel
 from clize import run
 

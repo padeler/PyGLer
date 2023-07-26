@@ -415,7 +415,7 @@ class PyGLerModel(object):
 
         normals = None
         if computeNormals and faces is not None:
-            from utils import ComputeNormals
+            from pygler.utils import ComputeNormals
             normals = ComputeNormals(vertices,faces)
             
         geometry = Geometry(vertices, triangles=faces, normals=normals, colors=colors,autoScale=autoScale)

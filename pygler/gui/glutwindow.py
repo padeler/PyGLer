@@ -16,6 +16,7 @@ from OpenGL import GL
 from . import key
 from . import mouse
 from . import event
+from pygler.utils import is_notebook
 
 class GlutWindow(event.EventDispatcher):
     '''
@@ -38,7 +39,9 @@ class GlutWindow(event.EventDispatcher):
         self._fullscreen = -1
         
         self.dragSensitivity = 5
-        
+
+        self.in_notebook = is_notebook()
+
         # Is there any glut loop already running ?
         if glut.glutGetWindow( ) == 0:
             glut.glutInit()
@@ -110,8 +113,11 @@ class GlutWindow(event.EventDispatcher):
         modifiers = glut.glutGetModifiers()
         modifiers = self._modifiers_translate(modifiers)
         state= self.dispatch_event('on_key_press', symbol, modifiers)
-        if not state and symbol == key.ESCAPE: #FIXME 
-            glut.glutLeaveMainLoop()
+        if not state and symbol == key.ESCAPE:
+            if self._fullscreen:
+                self.setFullscreen(False)
+            else:
+                self.stop()
 
     def _keyboard_up( self, code, x, y ):
         modifiers = glut.glutGetModifiers()
@@ -463,11 +469,11 @@ class GlutWindow(event.EventDispatcher):
 
     def stop(self):
         '''Exit mainloop'''
-        # FIXME This will also kill the interpreter. 
+        # This will also kill the interpreter. 
         # we do not want that. just to close the window and release resources.
-        if (glut.glutLeaveMainLoop):
+        if glut.glutLeaveMainLoop and not self.in_notebook:
             glut.glutLeaveMainLoop()
         else:
-            raise RuntimeError("Your GLUT implementation does not allow to stops the main loop")
+            print("This window is running in a notebook. Closing (and leaving the GLU main loop) will crush the interpreter. Skipping.")
 
 

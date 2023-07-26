@@ -10,6 +10,7 @@ Use the CameraParams class to set the intrinsics for the viewport camera of PyGL
 
 import numpy as np
 from pygler.model import PyGLerModel,Geometry
+from math import cos, sin
 
 def normalize_Nx3(arr):
     ''' Normalize a numpy array of 3 component vectors shape=(n,3) '''
@@ -125,6 +126,26 @@ def CreateCubeModel(name="cube",side=1.0,scale=[1.0,1.0,1.0],colors=[0,255,0],al
     return PyGLerModel(name, geometry=Geometry(cubeV, cubeF, colors=colors,autoScale=False,alpha=alpha),modelM=np.eye(4,dtype=np.float32))
 
 
+
+def get_transformation_matrix(tx, ty, tz, rx, ry, rz, angle):
+    """
+    Convert angle-axis representation to rotation matrix
+    """
+
+    c = cos(angle)
+    s = sin(angle)
+    v = np.array([rx, ry, rz])
+    k = v / np.linalg.norm(v)
+    skew_k = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+    R = np.eye(3) * c + (1 - c) * np.outer(k, k) + s * skew_k
+
+    # Create transformation matrix
+    T = np.eye(4)
+    T[:3, :3] = R
+    T[:3, 3] = np.array([tx, ty, tz])
+
+    return T
+
 class CameraParams(object):
     '''
     Virtual Camera used to for the PyGLer Viewport.
@@ -154,23 +175,23 @@ class CameraParams(object):
             
         #Create a (row major) projection matrix from intrinsics. 
         intr = np.zeros((4,4),dtype=np.float32); 
-        intr[0][0] = (2.0 * fx) / width;
-        intr[0][1] = 0;
-        intr[0][2] = -1 + (2 * cx) / width;
+        intr[0][0] = (2.0 * fx) / width
+        intr[0][1] = 0
+        intr[0][2] = -1 + (2 * cx) / width
         
         intr[1][1] = -(2 * fy) / height # FIXME This "-" is compatible with mbv but not standard. 
             
         intr[1][2] = 1 - (2 * cy) / height
-        intr[2][2] = 1;
+        intr[2][2] = 1
         intr[3][3] = unit; # unit conversion -- If the extrinsics are in meters set unit=1000 to convert all to meters
         cpm = np.zeros((4,4),dtype=np.float32) # clipped projection to znear through zfar
-        cpm[0][0] = 1;
-        cpm[1][1] = 1;
-        cpm[2][2] = zfar/(zfar - znear);
-        cpm[2][3] = (-((zfar*znear)/(zfar - znear))) / unit;
-        cpm[3][2] = 1;
+        cpm[0][0] = 1
+        cpm[1][1] = 1
+        cpm[2][2] = zfar/(zfar - znear)
+        cpm[2][3] = (-((zfar*znear)/(zfar - znear))) / unit
+        cpm[3][2] = 1
         
-
+        
             
         projectionMat = cpm.dot(intr)
         
@@ -187,4 +208,19 @@ class CameraParams(object):
     def projectionMat(self):
         return self._projectionMat
     
-    
+
+
+def is_notebook() -> bool:
+    """
+    Check if we are running in a Jupyter notebook.
+    """
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':
+            return True   # Jupyter notebook or qtconsole
+        elif shell == 'TerminalInteractiveShell':
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False      # Probably standard Python interpreter
