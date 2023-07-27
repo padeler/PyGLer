@@ -404,7 +404,7 @@ class PyGLerModel(object):
             points = scan["cartesianX"], scan["cartesianY"], scan["cartesianZ"]
             points = np.array(points).transpose().astype(np.float32)
             if scan.get("colorRed", None) is not None: # Assuming that if one color is present, all are present
-                colors = scan["colorRed"], scan["colorGreen"], scan["colorBlue"]
+                colors = scan["colorBlue"], scan["colorGreen"], scan["colorRed"]
                 colors = np.array(colors).transpose()
             else:
                 colors = None

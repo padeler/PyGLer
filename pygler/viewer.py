@@ -3,7 +3,7 @@ Created on Mar 24, 2014
 
 PyOpenGL viewer.
 
-PyGLer is a simple mesh viewer using PyOpenGL to render (textured) triangle meshes.
+PyGLer is a simple mesh viewer using PyOpenGL to render (textured) triangle meshes and pointclouds.
 PyGLer is based on Glumpy, some classed and modules are taken from Glumpy source
 
 
@@ -307,7 +307,7 @@ class PyGLer(object):
         
         view = self.controller.getViewM()
         self.shader.uniform_matrixf("viewM", view)
-        red,green,blue,alpha = 1,1,1,1
+        red,green,blue,alpha = 1,1,1,0
         GL.glClearColor(red,green,blue,alpha)
         
         if self.useFBO is True:
@@ -316,10 +316,10 @@ class PyGLer(object):
             self._draw() # Draw on the FBO
             GL.glBindFramebuffer(GL.GL_FRAMEBUFFER,0)
             
-            GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.fbo);
+            GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.fbo)
             GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT0); # read from FBO color0
              
-            GL.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, 0);
+            GL.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, 0)
             GL.glDrawBuffers((GL.GL_BACK,)) # write to window frame buffer color0
              
             GL.glBlitFramebuffer(0,0,self.fboWidth,self.fboHeight,0,0,self.width,self.height,GL.GL_COLOR_BUFFER_BIT,GL.GL_LINEAR)
