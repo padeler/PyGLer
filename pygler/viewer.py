@@ -347,7 +347,7 @@ class PyGLer(object):
         
         
     @staticmethod
-    def Convert2BGRD(rawRGBAXYZW, scale=1000.0, depthMin=2,depthMax=10000.0):
+    def Convert2BGRD(rawRGBAXYZW, scale=1000.0, depthMin=0,depthMax=10000.0):
         rgba,xyzw = rawRGBAXYZW
         bgr = (rgba[:,:,2::-1]*255.0).astype(np.ubyte)
         dtmp = xyzw[:,:,3]
