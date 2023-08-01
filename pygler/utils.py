@@ -130,8 +130,12 @@ def CreateCubeModel(name="cube",side=1.0,scale=[1.0,1.0,1.0],colors=[0,255,0],al
 def get_transformation_matrix(tx, ty, tz, rx, ry, rz, angle):
     """
     Convert angle-axis representation to rotation matrix
-    """
+    Angle is expected in radians
 
+    """
+    if angle <-2*np.pi or angle > 2*np.pi:
+        print(f"Warning. Are you sure the Angle ({angle}) is in radians?")
+    
     c = cos(angle)
     s = sin(angle)
     v = np.array([rx, ry, rz])
